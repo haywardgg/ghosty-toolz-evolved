@@ -316,7 +316,7 @@ class SystemOperations:
             logger.info("Running DISM repair...")
             success, stdout, stderr = self.execute_command(
                 "DISM /Online /Cleanup-Image /RestoreHealth",
-                timeout=900,
+                timeout=1800,
                 require_admin=True,
             )
             results["dism"] = {"success": success, "output": stdout or stderr}
