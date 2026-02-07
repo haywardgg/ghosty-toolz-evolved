@@ -298,10 +298,17 @@ class RegistryManager:
         
         try:
             if registry_keys:
-                # Backup specific keys - just export the first key directly
-                # If multiple keys, only backup the first one for simplicity
-                key_to_backup = registry_keys[0] if isinstance(registry_keys, list) else registry_keys
+                # Backup specific keys
+                # Note: For simplicity and reliability, we only backup the first key
+                # to avoid file concatenation issues that break the .reg format
+                if isinstance(registry_keys, list):
+                    if len(registry_keys) > 1:
+                        logger.warning(f"Multiple keys provided ({len(registry_keys)}), only backing up first key: {registry_keys[0]}")
+                    key_to_backup = registry_keys[0]
+                else:
+                    key_to_backup = registry_keys
                 
+                logger.info(f"Backing up registry key: {key_to_backup}")
                 result = subprocess.run(
                     ["reg", "export", key_to_backup, str(backup_path), "/y"],
                     capture_output=True,
@@ -310,14 +317,16 @@ class RegistryManager:
                 )
                 
                 if result.returncode != 0:
-                    logger.warning(f"Failed to export key {key_to_backup}: {result.stderr}")
-                    # Create an empty but valid .reg file
-                    with open(backup_path, "w", encoding="utf-16le") as f:
-                        # Write BOM
-                        f.write('\ufeff')
-                        f.write("Windows Registry Editor Version 5.00\n\n")
+                    error_msg = f"Failed to export key {key_to_backup}: {result.stderr}"
+                    logger.error(error_msg)
+                    raise RegistryError(error_msg)
+                    
+                # Verify the backup file was created and is valid
+                if not backup_path.exists() or backup_path.stat().st_size == 0:
+                    raise RegistryError(f"Backup file not created or is empty: {backup_path}")
             else:
                 # For full backup, just export HKEY_CURRENT_USER which is safer
+                logger.info("Creating full registry backup (HKEY_CURRENT_USER)")
                 result = subprocess.run(
                     ["reg", "export", "HKEY_CURRENT_USER", str(backup_path), "/y"],
                     capture_output=True,
@@ -326,12 +335,13 @@ class RegistryManager:
                 )
                 
                 if result.returncode != 0:
-                    logger.warning(f"Failed to export HKEY_CURRENT_USER: {result.stderr}")
-                    # Create an empty but valid .reg file
-                    with open(backup_path, "w", encoding="utf-16le") as f:
-                        # Write BOM
-                        f.write('\ufeff')
-                        f.write("Windows Registry Editor Version 5.00\n\n")
+                    error_msg = f"Failed to export HKEY_CURRENT_USER: {result.stderr}"
+                    logger.error(error_msg)
+                    raise RegistryError(error_msg)
+                    
+                # Verify the backup file was created and is valid
+                if not backup_path.exists() or backup_path.stat().st_size == 0:
+                    raise RegistryError(f"Backup file not created or is empty: {backup_path}")
             
             # Save metadata
             metadata = RegistryBackup(

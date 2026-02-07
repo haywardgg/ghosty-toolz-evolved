@@ -156,7 +156,10 @@ class MainWindow(ctk.CTk):
         self.tabview.set("Monitoring")
         
         # Customize DANGER ZONE tab button color
-        # This must be done after all tabs are created
+        self._setup_danger_zone_styling()
+
+    def _setup_danger_zone_styling(self) -> None:
+        """Configure dynamic red styling for DANGER ZONE tab button."""
         try:
             # Access the segmented button and configure colors for when DANGER ZONE is selected
             segmented_button = self.tabview._segmented_button
