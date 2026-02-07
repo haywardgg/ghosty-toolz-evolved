@@ -141,7 +141,7 @@ class MaintenanceTab:
         )
         info.grid(row=1, column=0, padx=10, pady=5, sticky="w")
 
-        btn = ctk.CTkButton(
+        self.maintenance_button = ctk.CTkButton(
             maint_frame,
             text="Run Full Maintenance",
             command=self._run_maintenance,
@@ -149,7 +149,7 @@ class MaintenanceTab:
             fg_color="#d9534f",
             hover_color="#c9302c",
         )
-        btn.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+        self.maintenance_button.grid(row=2, column=0, padx=10, pady=10, sticky="w")
 
         # Progress display
         self.maintenance_progress_label = ctk.CTkLabel(
@@ -239,7 +239,7 @@ class MaintenanceTab:
         threading.Thread(target=task, daemon=True).start()
 
     def _run_maintenance(self) -> None:
-        """Run full system maintenance."""
+        """Run full system maintenance with real-time output."""
         response = messagebox.askyesno(
             "Confirm Maintenance",
             "This will run SFC and DISM system repairs.\n\n"
@@ -252,41 +252,200 @@ class MaintenanceTab:
 
         logger.info("User initiated full system maintenance")
 
+        # Create output dialog
+        output_dialog = ctk.CTkToplevel(self.parent)
+        output_dialog.title("System Maintenance - Real-Time Output")
+        output_dialog.geometry("900x650")
+        output_dialog.transient(self.parent)
+        output_dialog.grab_set()
+
+        # Title
+        title = ctk.CTkLabel(
+            output_dialog,
+            text="System Maintenance Progress",
+            font=ctk.CTkFont(size=16, weight="bold")
+        )
+        title.pack(padx=10, pady=10)
+
+        # Status label
+        status_label = ctk.CTkLabel(
+            output_dialog,
+            text="Initializing...",
+            font=ctk.CTkFont(size=12)
+        )
+        status_label.pack(padx=10, pady=5)
+
+        # Output text area
+        output_text = ctk.CTkTextbox(output_dialog, wrap="word", font=ctk.CTkFont(size=10))
+        output_text.pack(padx=10, pady=10, fill="both", expand=True)
+
+        # Cancel/Close button
+        cancel_button = ctk.CTkButton(
+            output_dialog,
+            text="Cancel",
+            command=lambda: self._cancel_maintenance(output_dialog),
+            fg_color="#dc3545",
+            hover_color="#c82333",
+            width=100
+        )
+        cancel_button.pack(padx=10, pady=10)
+
+        # Track cancellation
+        self.maintenance_cancelled = False
+
+        def append_output(text: str):
+            """Append text to output dialog."""
+            output_text.insert("end", text)
+            output_text.see("end")
+
+        def update_status(text: str):
+            """Update status label."""
+            status_label.configure(text=text)
+
         def task():
             try:
                 if not self.system_ops.is_admin():
-                    self.parent.after(0, lambda: messagebox.showerror(
-                        "Admin Required",
-                        "Administrator privileges are required for system maintenance."
+                    output_dialog.after(0, lambda: append_output(
+                        "[ERROR] Administrator privileges required\n"
                     ))
+                    output_dialog.after(0, lambda: update_status("Failed - Admin required"))
+                    output_dialog.after(0, lambda: cancel_button.configure(text="Close"))
                     return
 
-                self.parent.after(0, lambda: self.maintenance_progress_label.configure(
-                    text="Running maintenance... This may take several minutes."
-                ))
+                from datetime import datetime
+                import subprocess
 
-                results = self.system_ops.run_system_maintenance()
+                # DNS Flush
+                if not self.maintenance_cancelled:
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    output_dialog.after(0, lambda: append_output(
+                        f"\n[{timestamp}] Starting DNS Cache Flush...\n"
+                    ))
+                    output_dialog.after(0, lambda: update_status("Flushing DNS cache..."))
+                    
+                    try:
+                        result = subprocess.run(
+                            ["ipconfig", "/flushdns"],
+                            capture_output=True,
+                            text=True,
+                            timeout=30
+                        )
+                        output_dialog.after(0, lambda: append_output(result.stdout + "\n"))
+                        timestamp = datetime.now().strftime("%H:%M:%S")
+                        output_dialog.after(0, lambda: append_output(
+                            f"[{timestamp}] DNS cache flushed successfully.\n\n"
+                        ))
+                    except Exception as e:
+                        output_dialog.after(0, lambda: append_output(f"[ERROR] {str(e)}\n\n"))
 
-                # Show results
-                success_count = sum(1 for r in results.values() if r.get("success", False))
-                total_count = len(results)
+                # System File Checker
+                if not self.maintenance_cancelled:
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    output_dialog.after(0, lambda: append_output(
+                        f"[{timestamp}] Starting System File Checker (sfc /scannow)...\n"
+                        "This may take 10-15 minutes...\n\n"
+                    ))
+                    output_dialog.after(0, lambda: update_status("Running System File Checker..."))
+                    
+                    try:
+                        process = subprocess.Popen(
+                            ["sfc", "/scannow"],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True,
+                            bufsize=1,
+                            universal_newlines=True
+                        )
+                        
+                        # Read output line by line
+                        for line in process.stdout:
+                            if self.maintenance_cancelled:
+                                process.terminate()
+                                break
+                            output_dialog.after(0, lambda l=line: append_output(l))
+                        
+                        process.wait()
+                        timestamp = datetime.now().strftime("%H:%M:%S")
+                        
+                        if process.returncode == 0:
+                            output_dialog.after(0, lambda: append_output(
+                                f"\n[{timestamp}] System File Checker completed successfully.\n\n"
+                            ))
+                        else:
+                            output_dialog.after(0, lambda: append_output(
+                                f"\n[{timestamp}] System File Checker completed with errors (code {process.returncode}).\n\n"
+                            ))
+                    except Exception as e:
+                        output_dialog.after(0, lambda: append_output(f"[ERROR] {str(e)}\n\n"))
 
-                msg = f"Maintenance completed: {success_count}/{total_count} tasks successful\n\n"
-                for task_name, result in results.items():
-                    status = "✓" if result.get("success", False) else "✗"
-                    msg += f"{status} {task_name}\n"
+                # DISM Health Check
+                if not self.maintenance_cancelled:
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    output_dialog.after(0, lambda: append_output(
+                        f"[{timestamp}] Starting DISM Health Restore...\n"
+                        "This may take 15-20 minutes...\n\n"
+                    ))
+                    output_dialog.after(0, lambda: update_status("Running DISM Health Restore..."))
+                    
+                    try:
+                        process = subprocess.Popen(
+                            ["DISM", "/Online", "/Cleanup-Image", "/RestoreHealth"],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True,
+                            bufsize=1,
+                            universal_newlines=True
+                        )
+                        
+                        # Read output line by line
+                        for line in process.stdout:
+                            if self.maintenance_cancelled:
+                                process.terminate()
+                                break
+                            output_dialog.after(0, lambda l=line: append_output(l))
+                        
+                        process.wait()
+                        timestamp = datetime.now().strftime("%H:%M:%S")
+                        
+                        if process.returncode == 0:
+                            output_dialog.after(0, lambda: append_output(
+                                f"\n[{timestamp}] DISM Health Restore completed successfully.\n\n"
+                            ))
+                        else:
+                            output_dialog.after(0, lambda: append_output(
+                                f"\n[{timestamp}] DISM completed with errors (code {process.returncode}).\n\n"
+                            ))
+                    except Exception as e:
+                        output_dialog.after(0, lambda: append_output(f"[ERROR] {str(e)}\n\n"))
 
-                self.parent.after(0, lambda: messagebox.showinfo("Maintenance Complete", msg))
-                self.parent.after(0, lambda: self.maintenance_progress_label.configure(text=""))
+                # Complete
+                if not self.maintenance_cancelled:
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    output_dialog.after(0, lambda: append_output(
+                        f"[{timestamp}] ====================================\n"
+                        f"[{timestamp}] System Maintenance Complete!\n"
+                        f"[{timestamp}] ====================================\n"
+                    ))
+                    output_dialog.after(0, lambda: update_status("Maintenance complete!"))
+                else:
+                    output_dialog.after(0, lambda: update_status("Maintenance cancelled"))
+                
+                output_dialog.after(0, lambda: cancel_button.configure(text="Close"))
 
             except Exception as e:
-                logger.error(f"Maintenance failed: {e}")
-                self.parent.after(0, lambda: messagebox.showerror(
-                    "Error", f"Maintenance failed: {e}"
-                ))
-                self.parent.after(0, lambda: self.maintenance_progress_label.configure(text=""))
+                error_msg = str(e)
+                logger.error(f"Maintenance failed: {error_msg}")
+                output_dialog.after(0, lambda: append_output(f"\n[ERROR] {error_msg}\n"))
+                output_dialog.after(0, lambda: update_status("Maintenance failed"))
+                output_dialog.after(0, lambda: cancel_button.configure(text="Close"))
 
         threading.Thread(target=task, daemon=True).start()
+
+    def _cancel_maintenance(self, dialog) -> None:
+        """Cancel maintenance operation or close dialog."""
+        if dialog.winfo_exists():
+            self.maintenance_cancelled = True
+            dialog.destroy()
 
     def _check_disk_health(self) -> None:
         """Check disk health."""
