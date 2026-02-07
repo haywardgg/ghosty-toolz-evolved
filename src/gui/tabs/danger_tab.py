@@ -68,11 +68,15 @@ class DangerTab:
         Returns:
             Formatted message string
         """
-        before_text = f"{before_value['type']}: {before_value['data']}" if before_value else "Not Set"
+        # Safely format before text with fallback for missing keys
+        if before_value and 'type' in before_value and 'data' in before_value:
+            before_text = f"{before_value['type']}: {before_value['data']}"
+        else:
+            before_text = "Not Set"
         
         # For restore operations, the value is deleted so "Deleted (Default)" is accurate
         # For apply operations, we should still be able to read it, so "Failed to read" indicates an error
-        if after_value:
+        if after_value and 'type' in after_value and 'data' in after_value:
             after_text = f"{after_value['type']}: {after_value['data']}"
         else:
             after_text = "Deleted (Default)" if is_restore else "Failed to read"

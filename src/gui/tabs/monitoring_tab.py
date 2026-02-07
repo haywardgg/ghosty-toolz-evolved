@@ -225,8 +225,8 @@ class MonitoringTab:
         )
         title.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
-        # Network details text box - now takes up more space without scroll
-        self.net_details_text = ctk.CTkTextbox(network_frame, wrap="word", state="disabled")
+        # Network details text box - now takes up more space, with parent's row weight for sizing
+        self.net_details_text = ctk.CTkTextbox(network_frame, wrap="word", state="disabled", height=300)
         self.net_details_text.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
 
     def start_monitoring(self) -> None:

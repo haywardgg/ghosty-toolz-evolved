@@ -545,8 +545,11 @@ class RegistryManager:
                     reg_type = parts[1]
                     data = parts[2]
                     
-                    # Match the value name
-                    if (not value_name and name == "(Default)") or name == value_name:
+                    # Match the value name (handle both empty string and None for default values)
+                    is_default_value = (value_name == "" or value_name is None) and name == "(Default)"
+                    is_named_value = value_name and name == value_name
+                    
+                    if is_default_value or is_named_value:
                         return {"type": reg_type, "data": data}
             
             return None
