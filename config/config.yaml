@@ -112,7 +112,7 @@ advanced:
   auto_update_check: true
   
 profiles:
-  current: "standard"
+  current: "expert"
   available:
     - basic
     - standard
