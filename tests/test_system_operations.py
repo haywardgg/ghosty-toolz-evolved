@@ -1,6 +1,7 @@
 """Tests for system operations module."""
 
 import pytest
+import sys
 from unittest.mock import Mock, patch
 from src.core.system_operations import SystemOperations, ValidationError
 
@@ -14,6 +15,7 @@ class TestSystemOperations:
         assert ops is not None
         assert ops.timeout > 0
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows-specific test")
     @patch('src.core.system_operations.ctypes.windll.shell32.IsUserAnAdmin')
     def test_is_admin(self, mock_admin):
         """Test admin check."""
