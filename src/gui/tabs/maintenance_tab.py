@@ -41,24 +41,20 @@ class MaintenanceTab:
         # Scrollable content frame
         content_frame = ctk.CTkScrollableFrame(self.parent)
         content_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-        content_frame.grid_columnconfigure((0, 1), weight=1)
+        content_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
-        # DNS Operations
-        self._create_dns_section(content_frame, row=0)
+        # System Restore at top (row 0, full width)
+        self._create_restore_point_section(content_frame, row=0)
 
-        # Restore Point Operations
-        self._create_restore_point_section(content_frame, row=1)
+        # DNS, System Maintenance, and Disk Health in same row (row 1, columns 0, 1, 2)
+        self._create_dns_section(content_frame, row=1, column=0)
+        self._create_system_maintenance_section(content_frame, row=1, column=1)
+        self._create_disk_section(content_frame, row=1, column=2)
 
-        # System Maintenance
-        self._create_system_maintenance_section(content_frame, row=2)
-
-        # Disk Operations
-        self._create_disk_section(content_frame, row=3)
-
-    def _create_dns_section(self, parent: ctk.CTkFrame, row: int) -> None:
+    def _create_dns_section(self, parent: ctk.CTkFrame, row: int, column: int = 0) -> None:
         """Create DNS operations section."""
         dns_frame = ctk.CTkFrame(parent)
-        dns_frame.grid(row=row, column=0, sticky="nsew", padx=5, pady=5)
+        dns_frame.grid(row=row, column=column, sticky="nsew", padx=5, pady=5)
         dns_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
@@ -74,10 +70,10 @@ class MaintenanceTab:
         btn = ctk.CTkButton(dns_frame, text="Flush DNS Cache", command=self._flush_dns, width=200)
         btn.grid(row=2, column=0, padx=10, pady=10, sticky="w")
 
-    def _create_restore_point_section(self, parent: ctk.CTkFrame, row: int) -> None:
+    def _create_restore_point_section(self, parent: ctk.CTkFrame, row: int, column: int = 0) -> None:
         """Create restore point section."""
         restore_frame = ctk.CTkFrame(parent)
-        restore_frame.grid(row=row, column=1, sticky="nsew", padx=5, pady=5)
+        restore_frame.grid(row=row, column=column, columnspan=3, sticky="nsew", padx=5, pady=5)
         restore_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
@@ -100,10 +96,10 @@ class MaintenanceTab:
         )
         btn.grid(row=3, column=0, padx=10, pady=10, sticky="w")
 
-    def _create_system_maintenance_section(self, parent: ctk.CTkFrame, row: int) -> None:
+    def _create_system_maintenance_section(self, parent: ctk.CTkFrame, row: int, column: int = 0) -> None:
         """Create system maintenance section."""
         maint_frame = ctk.CTkFrame(parent)
-        maint_frame.grid(row=row, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
+        maint_frame.grid(row=row, column=column, sticky="nsew", padx=5, pady=5)
         maint_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
@@ -134,10 +130,10 @@ class MaintenanceTab:
         )
         self.maintenance_progress_label.grid(row=3, column=0, padx=10, pady=5, sticky="w")
 
-    def _create_disk_section(self, parent: ctk.CTkFrame, row: int) -> None:
+    def _create_disk_section(self, parent: ctk.CTkFrame, row: int, column: int = 0) -> None:
         """Create disk operations section."""
         disk_frame = ctk.CTkFrame(parent)
-        disk_frame.grid(row=row, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
+        disk_frame.grid(row=row, column=column, sticky="nsew", padx=5, pady=5)
         disk_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(

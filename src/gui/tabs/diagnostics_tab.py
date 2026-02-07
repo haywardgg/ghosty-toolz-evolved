@@ -52,12 +52,11 @@ class DiagnosticsTab:
         """Create ping test section."""
         ping_frame = ctk.CTkFrame(parent)
         ping_frame.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
-        ping_frame.grid_columnconfigure(1, weight=1)
 
         title = ctk.CTkLabel(
             ping_frame, text="🌐 Ping Test", font=ctk.CTkFont(size=14, weight="bold")
         )
-        title.grid(row=0, column=0, columnspan=3, padx=10, pady=10, sticky="w")
+        title.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky="w")
 
         # Host input
         ctk.CTkLabel(ping_frame, text="Host:", font=ctk.CTkFont(size=11)).grid(

@@ -77,6 +77,19 @@ class SecurityScanner:
         Raises:
             SecurityError: If scan fails
         """
+        # Check for admin privileges at the start
+        if not self.system_ops.is_admin():
+            logger.warning("⚠️  Security scanner requires administrator privileges for complete results")
+            logger.info("Requesting elevation - please approve the UAC prompt...")
+            
+            try:
+                self.system_ops.request_admin_elevation()
+                # If elevation succeeds, app restarts as admin and this code won't execute.
+                # If elevation fails or is declined, execution continues below.
+            except Exception as e:
+                logger.error(f"Failed to obtain admin privileges: {e}")
+                logger.warning("⚠️  Continuing with limited scan - some checks will be skipped")
+        
         logger.info("Starting vulnerability scan")
         audit_logger.info("Vulnerability scan initiated")
 
@@ -249,6 +262,11 @@ class SecurityScanner:
 
     def _check_smbv1(self) -> Optional[Vulnerability]:
         """Check if SMBv1 is enabled (security risk)."""
+        # Check if we have admin privileges for this check
+        if not self.system_ops.is_admin():
+            logger.debug("Skipping SMBv1 check - requires admin privileges")
+            return None
+        
         try:
             success, stdout, stderr = self.system_ops.execute_command(
                 'powershell -Command "(Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol).State"',

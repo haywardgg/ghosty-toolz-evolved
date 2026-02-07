@@ -48,6 +48,7 @@ class RegistryBackup:
     backup_path: str
     description: str
     registry_keys: List[str]
+    skipped: bool = False  # True if backup was skipped because key didn't exist
 
 
 class RegistryError(Exception):
@@ -389,6 +390,35 @@ class RegistryManager:
                 else:
                     key_to_backup = registry_keys
                 
+                # Check if key exists before trying to export
+                check_result = subprocess.run(
+                    ["reg", "query", key_to_backup],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                
+                if check_result.returncode != 0:
+                    # Key doesn't exist - this is OK, just skip backup
+                    logger.warning(f"Registry key does not exist yet: {key_to_backup}")
+                    logger.info("Skipping backup - key will be created when tweak is applied")
+                    
+                    # Save metadata noting that backup was skipped
+                    metadata = RegistryBackup(
+                        backup_id=backup_id,
+                        timestamp=datetime.now().isoformat(),
+                        backup_path=str(backup_path),
+                        description=description,
+                        registry_keys=registry_keys or ["Full backup"],
+                        skipped=True
+                    )
+                    
+                    self.metadata[backup_id] = metadata
+                    self._save_metadata()
+                    
+                    return backup_id
+                
+                # Key exists, proceed with backup
                 logger.info(f"Backing up registry key: {key_to_backup}")
                 result = subprocess.run(
                     ["reg", "export", key_to_backup, str(backup_path), "/y"],
@@ -467,6 +497,12 @@ class RegistryManager:
         
         metadata = self.metadata[backup_id]
         backup_path = Path(metadata.backup_path)
+        
+        # Check if backup was skipped (no file created)
+        if metadata.skipped:
+            logger.info(f"Backup was skipped (key didn't exist): {backup_id}")
+            logger.info("Nothing to restore - this is expected for new registry keys")
+            return True
         
         if not backup_path.exists():
             raise RegistryError(f"Backup file not found: {backup_path}")
