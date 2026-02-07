@@ -74,7 +74,11 @@ class RegistryManager:
         # Define common Windows 11 registry tweaks
         self.available_tweaks = self._define_tweaks()
         
+        # Load additional tweaks from JSON config files
+        self._load_tweaks_from_json()
+        
         logger.info(f"Registry manager initialized (backup location: {self.tmp_dir})")
+        logger.info(f"Loaded {len(self.available_tweaks)} registry tweaks")
     
     def _load_metadata(self) -> Dict[str, RegistryBackup]:
         """
@@ -266,9 +270,176 @@ class RegistryManager:
                 risk_level="low",
                 requires_restart=False
             ),
+            # Windows 11 specific tweaks
+            RegistryTweak(
+                id="disable_copilot",
+                name="Disable Windows Copilot",
+                description="Disables Windows Copilot AI assistant",
+                category="Privacy",
+                registry_key=r"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\WindowsCopilot",
+                value_name="TurnOffWindowsCopilot",
+                value_data="1",
+                value_type="REG_DWORD",
+                risk_level="low",
+                requires_restart=False
+            ),
+            RegistryTweak(
+                id="disable_widgets",
+                name="Disable Widgets",
+                description="Disables Windows 11 widgets feature",
+                category="Performance",
+                registry_key=r"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Dsh",
+                value_name="AllowNewsAndInterests",
+                value_data="0",
+                value_type="REG_DWORD",
+                risk_level="low",
+                requires_restart=False
+            ),
+            RegistryTweak(
+                id="disable_chat_icon",
+                name="Disable Chat Icon",
+                description="Removes the chat icon from the taskbar",
+                category="UI",
+                registry_key=r"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
+                value_name="TaskbarMn",
+                value_data="0",
+                value_type="REG_DWORD",
+                risk_level="low",
+                requires_restart=False
+            ),
+            RegistryTweak(
+                id="enable_compact_mode",
+                name="Enable Compact Mode in Explorer",
+                description="Enables compact view mode in File Explorer for Windows 11",
+                category="UI",
+                registry_key=r"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
+                value_name="UseCompactMode",
+                value_data="1",
+                value_type="REG_DWORD",
+                risk_level="low",
+                requires_restart=False
+            ),
+            RegistryTweak(
+                id="show_all_tray_icons",
+                name="Show All Tray Icons",
+                description="Shows all system tray icons instead of hiding them",
+                category="UI",
+                registry_key=r"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer",
+                value_name="EnableAutoTray",
+                value_data="0",
+                value_type="REG_DWORD",
+                risk_level="low",
+                requires_restart=False
+            ),
         ]
         
         return tweaks
+    
+    def _load_tweaks_from_json(self) -> None:
+        """
+        Load additional registry tweaks from JSON config files.
+        
+        Loads from:
+        - config/registry_tweaks.json
+        - plugins/*.json (for extensibility)
+        """
+        json_files = []
+        
+        # Load from config directory
+        config_file = Path("config") / "registry_tweaks.json"
+        if config_file.exists():
+            json_files.append(config_file)
+        
+        # Load from plugins directory
+        plugins_dir = Path("plugins")
+        if plugins_dir.exists():
+            json_files.extend(plugins_dir.glob("*.json"))
+        
+        for json_file in json_files:
+            try:
+                logger.debug(f"Loading tweaks from {json_file}")
+                with open(json_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                
+                # Validate JSON structure
+                if not self._validate_tweaks_json(data):
+                    logger.warning(f"Invalid JSON structure in {json_file}, skipping")
+                    continue
+                
+                # Parse tweaks from JSON
+                for tweak_data in data.get("tweaks", []):
+                    try:
+                        # Convert JSON format to RegistryTweak format
+                        apply_data = tweak_data.get("apply", {})
+                        
+                        tweak = RegistryTweak(
+                            id=tweak_data.get("id"),
+                            name=tweak_data.get("name"),
+                            description=tweak_data.get("description"),
+                            category=tweak_data.get("category"),
+                            registry_key=apply_data.get("key", "").replace("\\\\", "\\"),
+                            value_name=apply_data.get("value_name"),
+                            value_data=str(apply_data.get("value_data")),
+                            value_type=apply_data.get("value_type"),
+                            risk_level=tweak_data.get("risk_level", "medium"),
+                            requires_restart=tweak_data.get("requires_restart", False)
+                        )
+                        
+                        # Check if tweak ID already exists
+                        if not any(t.id == tweak.id for t in self.available_tweaks):
+                            self.available_tweaks.append(tweak)
+                            logger.debug(f"Loaded tweak: {tweak.id}")
+                        else:
+                            logger.debug(f"Tweak {tweak.id} already exists, skipping")
+                            
+                    except Exception as e:
+                        logger.warning(f"Failed to parse tweak in {json_file}: {e}")
+                        
+            except Exception as e:
+                logger.error(f"Failed to load tweaks from {json_file}: {e}")
+    
+    def _validate_tweaks_json(self, data: Dict[str, Any]) -> bool:
+        """
+        Validate JSON structure for registry tweaks.
+        
+        Args:
+            data: Parsed JSON data
+            
+        Returns:
+            True if valid, False otherwise
+        """
+        if not isinstance(data, dict):
+            return False
+        
+        if "tweaks" not in data:
+            return False
+        
+        if not isinstance(data["tweaks"], list):
+            return False
+        
+        # Validate each tweak has required fields
+        required_fields = ["id", "name", "description", "category", "apply"]
+        for tweak in data["tweaks"]:
+            if not isinstance(tweak, dict):
+                return False
+            
+            for field in required_fields:
+                if field not in tweak:
+                    logger.warning(f"Tweak missing required field: {field}")
+                    return False
+            
+            # Validate apply section
+            apply_data = tweak.get("apply", {})
+            if not isinstance(apply_data, dict):
+                return False
+            
+            required_apply_fields = ["key", "value_name", "value_data", "value_type"]
+            for field in required_apply_fields:
+                if field not in apply_data:
+                    logger.warning(f"Apply section missing required field: {field}")
+                    return False
+        
+        return True
     
     def get_available_tweaks(self) -> List[RegistryTweak]:
         """
