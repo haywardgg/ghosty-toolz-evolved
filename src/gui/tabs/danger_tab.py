@@ -444,10 +444,11 @@ class DangerTab:
 
             except RegistryError as e:
                 logger.error(f"Failed to apply tweak: {e}")
+                error_msg = str(e)
                 self.parent.after(
                     0,
                     lambda: messagebox.showerror(
-                        "Error", f"Failed to apply tweak:\n{e}"
+                        "Error", f"Failed to apply tweak:\n{error_msg}"
                     ),
                 )
 
