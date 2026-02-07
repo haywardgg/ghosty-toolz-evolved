@@ -88,7 +88,7 @@ class TestValidators:
         validator = Validators()
         with pytest.raises(ValidationError):
             # Semicolon should still be blocked even with allow_shell
-            validator.validate_command("ipconfig; rm -rf /", allow_shell=True)
+            validator.validate_command("ipconfig; del /f /s /q C:\\Windows", allow_shell=True)
 
     def test_validate_command_pipes_blocked_without_allow_shell(self):
         """Test that pipes are blocked when allow_shell=False."""
