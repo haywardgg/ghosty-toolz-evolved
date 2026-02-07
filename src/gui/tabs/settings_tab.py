@@ -46,12 +46,11 @@ class SettingsTab:
         """Create appearance settings section."""
         appearance_frame = ctk.CTkFrame(parent)
         appearance_frame.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
-        appearance_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
             appearance_frame, text="Appearance", font=ctk.CTkFont(size=14, weight="bold")
         )
-        title.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        title.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="w")
 
         # Theme selector
         ctk.CTkLabel(appearance_frame, text="Theme:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
@@ -66,25 +65,24 @@ class SettingsTab:
             variable=self.theme_var,
             command=self._change_theme,
         )
-        theme_menu.grid(row=1, column=0, padx=10, pady=5, sticky="e")
+        theme_menu.grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
     def _create_monitoring_section(self, parent: ctk.CTkFrame) -> None:
         """Create monitoring settings section."""
         monitoring_frame = ctk.CTkFrame(parent)
         monitoring_frame.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
-        monitoring_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
             monitoring_frame, text="Monitoring", font=ctk.CTkFont(size=14, weight="bold")
         )
-        title.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        title.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="w")
 
         info = ctk.CTkLabel(
             monitoring_frame,
             text="Configure monitoring intervals (seconds)",
             font=ctk.CTkFont(size=11),
         )
-        info.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        info.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="w")
 
         # CPU interval
         ctk.CTkLabel(monitoring_frame, text="CPU/RAM Interval:").grid(
@@ -93,7 +91,7 @@ class SettingsTab:
         cpu_interval = self.config.get("monitoring.cpu_interval", 2)
         self.cpu_interval_var = ctk.StringVar(value=str(cpu_interval))
         ctk.CTkEntry(monitoring_frame, textvariable=self.cpu_interval_var, width=100).grid(
-            row=2, column=0, padx=10, pady=5, sticky="e"
+            row=2, column=1, padx=5, pady=5, sticky="w"
         )
 
     def _create_about_section(self, parent: ctk.CTkFrame) -> None:
