@@ -4,7 +4,7 @@
 app:
   name: "Ghost Toolz Evolved"
   version: "2.0.0"
-  author: "Ghosty"
+  author: "HaywardGG"
   description: "Professional Windows System Maintenance Tool"
   
 ui:
