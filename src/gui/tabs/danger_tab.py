@@ -8,10 +8,11 @@ import customtkinter as ctk
 from tkinter import messagebox, filedialog
 import threading
 from pathlib import Path
+from typing import Optional, Dict
 
 from src.utils.logger import get_logger
 from src.utils.admin_state import AdminState
-from src.core.registry_manager import RegistryManager, RegistryError
+from src.core.registry_manager import RegistryManager, RegistryError, RegistryTweak
 
 logger = get_logger("danger_tab")
 
@@ -53,7 +54,7 @@ class DangerTab:
         self._create_history_section(content_frame)
 
     def _format_registry_change_message(
-        self, tweak, before_value: Optional[Dict[str, str]], after_value: Optional[Dict[str, str]], 
+        self, tweak: RegistryTweak, before_value: Optional[Dict[str, str]], after_value: Optional[Dict[str, str]], 
         is_restore: bool = False
     ) -> str:
         """

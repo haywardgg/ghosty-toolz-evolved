@@ -521,12 +521,22 @@ class RegistryManager:
             Dictionary with 'type' and 'data' keys, or None if not found
         """
         try:
-            result = subprocess.run(
-                ["reg", "query", registry_key, "/v", value_name if value_name else "(Default)"],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
+            # For empty string value_name (default value), use special parameter
+            if value_name == "":
+                value_param = "/ve"  # /ve for default value
+                result = subprocess.run(
+                    ["reg", "query", registry_key, value_param],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+            else:
+                result = subprocess.run(
+                    ["reg", "query", registry_key, "/v", value_name],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
             
             if result.returncode != 0:
                 return None
