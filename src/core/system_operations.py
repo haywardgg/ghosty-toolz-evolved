@@ -328,6 +328,166 @@ class SystemOperations:
 
         return results
 
+    def edit_hosts_file(self) -> bool:
+        """
+        Open the Windows hosts file in notepad for editing.
+        
+        Requires administrator privileges.
+        
+        Returns:
+            True if hosts file was opened successfully
+            
+        Raises:
+            PrivilegeError: If not running as administrator
+        """
+        if not self.is_admin():
+            raise PrivilegeError("Administrator privileges required to edit hosts file")
+        
+        logger.info("Opening hosts file for editing")
+        audit_logger.info("User opened hosts file for editing")
+        
+        hosts_path = r"C:\Windows\System32\drivers\etc\hosts"
+        
+        try:
+            # Open hosts file with notepad
+            subprocess.Popen(["notepad.exe", hosts_path])
+            logger.info("Hosts file opened successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to open hosts file: {e}")
+            raise SystemOperationError(f"Failed to open hosts file: {e}")
+    
+    def set_dns_servers(self, adapter: str, primary: str, secondary: Optional[str] = None) -> bool:
+        """
+        Set DNS servers for a network adapter.
+        
+        Args:
+            adapter: Network adapter name (e.g., "Ethernet", "Wi-Fi")
+            primary: Primary DNS server IP
+            secondary: Optional secondary DNS server IP
+            
+        Returns:
+            True if DNS servers were set successfully
+            
+        Raises:
+            PrivilegeError: If not running as administrator
+        """
+        if not self.is_admin():
+            raise PrivilegeError("Administrator privileges required to set DNS servers")
+        
+        logger.info(f"Setting DNS servers for adapter '{adapter}': {primary}, {secondary}")
+        audit_logger.info(f"User set DNS servers for adapter '{adapter}'")
+        
+        try:
+            # Set primary DNS
+            cmd_primary = f'netsh interface ip set dns name="{adapter}" static {primary}'
+            success, stdout, stderr = self.execute_command(cmd_primary, require_admin=True)
+            
+            if not success:
+                raise SystemOperationError(f"Failed to set primary DNS: {stderr}")
+            
+            # Set secondary DNS if provided
+            if secondary:
+                cmd_secondary = f'netsh interface ip add dns name="{adapter}" {secondary} index=2'
+                success, stdout, stderr = self.execute_command(cmd_secondary, require_admin=True)
+                
+                if not success:
+                    logger.warning(f"Failed to set secondary DNS: {stderr}")
+            
+            logger.info("DNS servers set successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to set DNS servers: {e}")
+            raise SystemOperationError(f"Failed to set DNS servers: {e}")
+    
+    def reset_dns_to_auto(self, adapter: str) -> bool:
+        """
+        Reset DNS to automatic (DHCP) for a network adapter.
+        
+        Args:
+            adapter: Network adapter name (e.g., "Ethernet", "Wi-Fi")
+            
+        Returns:
+            True if DNS was reset successfully
+            
+        Raises:
+            PrivilegeError: If not running as administrator
+        """
+        if not self.is_admin():
+            raise PrivilegeError("Administrator privileges required to reset DNS")
+        
+        logger.info(f"Resetting DNS to auto for adapter '{adapter}'")
+        audit_logger.info(f"User reset DNS to auto for adapter '{adapter}'")
+        
+        try:
+            cmd = f'netsh interface ip set dns name="{adapter}" dhcp'
+            success, stdout, stderr = self.execute_command(cmd, require_admin=True)
+            
+            if not success:
+                raise SystemOperationError(f"Failed to reset DNS: {stderr}")
+            
+            logger.info("DNS reset to auto successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to reset DNS: {e}")
+            raise SystemOperationError(f"Failed to reset DNS: {e}")
+    
+    def view_dns_cache(self) -> str:
+        """
+        View the DNS cache.
+        
+        Returns:
+            DNS cache contents as string
+        """
+        logger.info("Viewing DNS cache")
+        
+        try:
+            success, stdout, stderr = self.execute_command("ipconfig /displaydns", timeout=30)
+            
+            if not success:
+                raise SystemOperationError(f"Failed to view DNS cache: {stderr}")
+            
+            return stdout
+            
+        except Exception as e:
+            logger.error(f"Failed to view DNS cache: {e}")
+            raise SystemOperationError(f"Failed to view DNS cache: {e}")
+    
+    def get_network_adapters(self) -> List[str]:
+        """
+        Get list of network adapter names.
+        
+        Returns:
+            List of network adapter names
+        """
+        logger.info("Getting network adapters")
+        
+        try:
+            cmd = "netsh interface show interface"
+            success, stdout, stderr = self.execute_command(cmd, timeout=30)
+            
+            if not success:
+                raise SystemOperationError(f"Failed to get network adapters: {stderr}")
+            
+            # Parse adapter names from output
+            adapters = []
+            for line in stdout.split('\n'):
+                line = line.strip()
+                if line and not line.startswith('-') and not line.startswith('Admin'):
+                    # Extract adapter name (last column)
+                    parts = line.split()
+                    if len(parts) >= 4:
+                        adapter_name = ' '.join(parts[3:])
+                        adapters.append(adapter_name)
+            
+            return adapters
+            
+        except Exception as e:
+            logger.error(f"Failed to get network adapters: {e}")
+            return []
+
     def get_system_health_report(self) -> Dict[str, Any]:
         """
         Generate comprehensive system health report.
