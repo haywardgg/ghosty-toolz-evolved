@@ -222,12 +222,12 @@ class SettingsTab:
                 # Restore all registry changes to defaults
                 logger.info("Restoring all registry changes to defaults...")
                 try:
-                    restore_results = registry_manager.restore_all_to_defaults()
-                    success_count, total_applied, failed_tweaks = restore_results
+                    success_count, total_applied, failed_tweaks = registry_manager.restore_all_to_defaults()
                     if failed_tweaks:
                         logger.warning(f"Some tweaks failed to restore: {', '.join(failed_tweaks)}")
                     else:
                         logger.info(f"Successfully restored {success_count} registry tweaks to defaults")
+                    restore_results = (success_count, total_applied, failed_tweaks)
                 except Exception as e:
                     restore_results = None
                     logger.warning(f"Failed to restore registry defaults: {e}")

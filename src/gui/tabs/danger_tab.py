@@ -53,6 +53,21 @@ class DangerTab:
         # Backup history section
         self._create_history_section(content_frame)
 
+    def _format_registry_value_text(self, value: Optional[Dict[str, str]], default: str = "Not Set") -> str:
+        """
+        Format registry value dictionary into display text.
+        
+        Args:
+            value: Registry value dict with 'type' and 'data' keys, or None
+            default: Default text to return if value is None or invalid
+        
+        Returns:
+            Formatted text like "REG_DWORD: 0x1" or default if value is invalid
+        """
+        if value and 'type' in value and 'data' in value:
+            return f"{value['type']}: {value['data']}"
+        return default
+    
     def _format_registry_change_message(
         self,
         tweak: RegistryTweak,
@@ -73,18 +88,12 @@ class DangerTab:
         Returns:
             Formatted message string showing the registry change details
         """
-        # Safely format before text with fallback for missing keys
-        if before_value and 'type' in before_value and 'data' in before_value:
-            before_text = f"{before_value['type']}: {before_value['data']}"
-        else:
-            before_text = "Not Set"
+        # Format before text
+        before_text = self._format_registry_value_text(before_value, "Not Set")
         
-        # For restore operations, the value is deleted so "Deleted (Default)" is accurate
-        # For apply operations, we should still be able to read it, so "Failed to read" indicates an error
-        if after_value and 'type' in after_value and 'data' in after_value:
-            after_text = f"{after_value['type']}: {after_value['data']}"
-        else:
-            after_text = "Deleted (Default)" if is_restore else "Failed to read"
+        # Format after text - different default based on operation type
+        after_default = "Deleted (Default)" if is_restore else "Failed to read"
+        after_text = self._format_registry_value_text(after_value, after_default)
         
         return (
             f"\n\n📋 Registry Changes:\n"

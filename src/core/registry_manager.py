@@ -525,19 +525,10 @@ class RegistryManager:
             This method uses the /ve parameter for querying default registry values.
         """
         try:
-            # Build command based on whether we're querying default value or named value
-            if value_name == "":
-                # For empty string value_name (default value), use /ve parameter
-                cmd = ["reg", "query", registry_key, "/ve"]
-            else:
-                cmd = ["reg", "query", registry_key, "/v", value_name]
+            # Build command: use /ve for default value (empty string), /v <name> for named values
+            cmd = ["reg", "query", registry_key] + (["/ve"] if value_name == "" else ["/v", value_name])
             
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
             
             if result.returncode != 0:
                 return None
