@@ -227,10 +227,8 @@ class MonitoringTab:
         title.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
         # Network details text box for comprehensive info
-        self.net_details_text = ctk.CTkTextbox(network_frame, height=250, wrap="word")
+        self.net_details_text = ctk.CTkTextbox(network_frame, height=250, wrap="word", state="disabled")
         self.net_details_text.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
-        self.net_details_text.insert("1.0", "Loading network information...")
-        self.net_details_text.configure(state="disabled")
 
     def start_monitoring(self) -> None:
         """Start monitoring service."""

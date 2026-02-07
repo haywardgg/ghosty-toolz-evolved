@@ -294,6 +294,9 @@ class MonitoringService:
             import urllib.request
             import urllib.error
             
+            # DNS test server for local IP detection
+            DNS_TEST_SERVER = "8.8.8.8"
+            
             net_io = psutil.net_io_counters()
             net_if_addrs = psutil.net_if_addrs()
             net_if_stats = psutil.net_if_stats()
@@ -322,6 +325,7 @@ class MonitoringService:
                 interfaces.append(interface_info)
             
             # Get public IP (with timeout and error handling)
+            # Note: Uses HTTPS with default SSL verification
             public_ip = None
             try:
                 with urllib.request.urlopen('https://api.ipify.org', timeout=3) as response:
@@ -331,7 +335,6 @@ class MonitoringService:
                 public_ip = "Unavailable"
             
             # Get default gateway
-            gateways = psutil.net_if_stats()  # This is a placeholder - we'll use netifaces if available
             default_gateway = None
             try:
                 # Try to get gateway via netifaces if available
@@ -380,7 +383,7 @@ class MonitoringService:
             try:
                 # Get local IP by creating a socket
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                s.connect(("8.8.8.8", 80))
+                s.connect((DNS_TEST_SERVER, 80))
                 local_ip = s.getsockname()[0]
                 s.close()
                 

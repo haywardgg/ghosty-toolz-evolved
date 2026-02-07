@@ -27,6 +27,9 @@ class MaintenanceTab:
         """
         self.parent = parent
         self.system_ops = SystemOperations()
+        
+        # Thread-safe cancellation flag
+        self.maintenance_cancelled = threading.Event()
 
         # Configure parent grid
         self.parent.grid_rowconfigure(0, weight=1)
@@ -348,8 +351,8 @@ class MaintenanceTab:
         )
         cancel_button.pack(padx=10, pady=10)
 
-        # Track cancellation
-        self.maintenance_cancelled = False
+        # Clear cancellation flag
+        self.maintenance_cancelled.clear()
 
         def append_output(text: str):
             """Append text to output dialog."""
@@ -374,7 +377,7 @@ class MaintenanceTab:
                 import subprocess
 
                 # DNS Flush
-                if not self.maintenance_cancelled:
+                if not self.maintenance_cancelled.is_set():
                     timestamp = datetime.now().strftime("%H:%M:%S")
                     output_dialog.after(0, lambda: append_output(
                         f"\n[{timestamp}] Starting DNS Cache Flush...\n"
@@ -397,7 +400,7 @@ class MaintenanceTab:
                         output_dialog.after(0, lambda: append_output(f"[ERROR] {str(e)}\n\n"))
 
                 # System File Checker
-                if not self.maintenance_cancelled:
+                if not self.maintenance_cancelled.is_set():
                     timestamp = datetime.now().strftime("%H:%M:%S")
                     output_dialog.after(0, lambda: append_output(
                         f"[{timestamp}] Starting System File Checker (sfc /scannow)...\n"
@@ -417,7 +420,7 @@ class MaintenanceTab:
                         
                         # Read output line by line
                         for line in process.stdout:
-                            if self.maintenance_cancelled:
+                            if self.maintenance_cancelled.is_set():
                                 process.terminate()
                                 break
                             output_dialog.after(0, lambda l=line: append_output(l))
@@ -437,7 +440,7 @@ class MaintenanceTab:
                         output_dialog.after(0, lambda: append_output(f"[ERROR] {str(e)}\n\n"))
 
                 # DISM Health Check
-                if not self.maintenance_cancelled:
+                if not self.maintenance_cancelled.is_set():
                     timestamp = datetime.now().strftime("%H:%M:%S")
                     output_dialog.after(0, lambda: append_output(
                         f"[{timestamp}] Starting DISM Health Restore...\n"
@@ -457,7 +460,7 @@ class MaintenanceTab:
                         
                         # Read output line by line
                         for line in process.stdout:
-                            if self.maintenance_cancelled:
+                            if self.maintenance_cancelled.is_set():
                                 process.terminate()
                                 break
                             output_dialog.after(0, lambda l=line: append_output(l))
@@ -477,7 +480,7 @@ class MaintenanceTab:
                         output_dialog.after(0, lambda: append_output(f"[ERROR] {str(e)}\n\n"))
 
                 # Complete
-                if not self.maintenance_cancelled:
+                if not self.maintenance_cancelled.is_set():
                     timestamp = datetime.now().strftime("%H:%M:%S")
                     output_dialog.after(0, lambda: append_output(
                         f"[{timestamp}] ====================================\n"
@@ -502,7 +505,7 @@ class MaintenanceTab:
     def _cancel_maintenance(self, dialog) -> None:
         """Cancel maintenance operation or close dialog."""
         if dialog.winfo_exists():
-            self.maintenance_cancelled = True
+            self.maintenance_cancelled.set()
             dialog.destroy()
 
     def _check_disk_health(self) -> None:
