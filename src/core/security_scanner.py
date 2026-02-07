@@ -317,15 +317,11 @@ class SecurityScanner:
             # Detect which command to use for counting
             # Check if we're in a Unix-like shell (Git Bash, WSL, etc.)
             # MSYSTEM indicates Git Bash/MSYS2, SHELL with bash/sh/zsh indicates Unix-like shell
-            is_unix_shell = False
-            if 'MSYSTEM' in os.environ:
-                is_unix_shell = True
-            elif 'SHELL' in os.environ:
-                # Handle both Unix and Windows path separators
-                shell_path = os.environ['SHELL']
-                shell_name = shell_path.split('/')[-1].split('\\')[-1].lower()
-                # Use exact matching to avoid false positives (e.g., 'shimulator', 'flasher')
-                is_unix_shell = shell_name in ['bash', 'sh', 'zsh', 'bash.exe', 'sh.exe', 'zsh.exe']
+            is_unix_shell = 'MSYSTEM' in os.environ or (
+                'SHELL' in os.environ and
+                os.path.basename(os.environ['SHELL']).lower() in 
+                ['bash', 'sh', 'zsh', 'bash.exe', 'sh.exe', 'zsh.exe']
+            )
             count_cmd = "grep -c" if is_unix_shell else "find /c"
 
             # Get rule counts
