@@ -201,27 +201,19 @@ class SecurityTab:
         threading.Thread(target=task, daemon=True).start()
 
     def _view_remediation_actions(self) -> None:
-        """View available remediation actions."""
+        """View available remediation actions in interactive dialog."""
         logger.info("User viewing remediation actions")
-
-        available_actions = self.remediation.get_available_actions(self.last_vulnerabilities)
-
-        if not available_actions:
-            result_text = "No automated remediation actions available.\n"
-            result_text += "Run a vulnerability scan first to detect issues."
-        else:
-            result_text = f"Available Automated Fixes ({len(available_actions)}):\n"
-            result_text += "=" * 50 + "\n\n"
-
-            for action in available_actions:
-                result_text += f"• {action.name}\n"
-                result_text += f"  {action.description}\n"
-                result_text += f"  Risk Level: {action.risk_level.upper()}\n"
-                result_text += f"  Requires Admin: {'Yes' if action.requires_admin else 'No'}\n"
-                result_text += f"  Reversible: {'Yes' if action.reversible else 'No'}\n"
-                result_text += f"  Est. Time: {action.estimated_time}s\n\n"
-
-        self._update_results(result_text)
+        
+        # Import here to avoid circular imports
+        from src.gui.dialogs import RemediationDialog
+        
+        # Open interactive dialog
+        dialog = RemediationDialog(
+            parent=self.parent.winfo_toplevel(),
+            remediation=self.remediation,
+            vulnerabilities=self.last_vulnerabilities
+        )
+        dialog.focus()
 
     def _execute_remediation(self, action_id: str) -> None:
         """Execute a remediation action."""
