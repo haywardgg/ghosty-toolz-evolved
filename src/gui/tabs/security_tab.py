@@ -526,7 +526,6 @@ class SecurityTab:
                 messagebox.showerror("Error", f"Failed to run fixes: {e}")
         
         threading.Thread(target=task, daemon=True).start()
-        threading.Thread(target=task, daemon=True).start()
 
     def _update_results(self, text: str) -> None:
         """Update results display."""
