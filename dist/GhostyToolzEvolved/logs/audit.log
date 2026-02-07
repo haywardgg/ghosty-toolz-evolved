@@ -1,0 +1,20 @@
+2026-02-07 23:36:02 - audit - INFO - Ping test initiated: 8.8.8.8
+2026-02-07 23:36:17 - audit - INFO - Traceroute initiated: 8.8.8.8
+2026-02-07 23:37:10 - audit - INFO - Ping test initiated: 8.8.8.8
+2026-02-07 23:38:03 - audit - INFO - Ping test initiated: 8.8.8.8
+2026-02-07 23:38:36 - audit - INFO - Registry backup started: Manual backup
+2026-02-07 23:38:37 - audit - INFO - Registry backup completed: reg_backup_20260207_233836
+2026-02-07 23:38:53 - audit - INFO - Restore all registry tweaks to defaults initiated
+2026-02-07 23:38:53 - audit - INFO - Registry tweak restored to default: Show File Extensions (ID: show_file_extensions)
+2026-02-07 23:38:53 - audit - INFO - Registry tweak restored to default: Show Hidden Files (ID: show_hidden_files)
+2026-02-07 23:38:53 - audit - INFO - Restore all completed: 2/2 successful, 0 failed
+2026-02-07 23:39:58 - audit - INFO - Remediation initiated: Flush DNS Cache (id=flush_dns)
+2026-02-07 23:39:58 - audit - INFO - Command executed: ipconfig /flushdns (admin=False)
+2026-02-07 23:39:58 - audit - INFO - Command SUCCESS: ipconfig /flushdns (code=0)
+2026-02-07 23:39:58 - audit - INFO - Remediation success: Flush DNS Cache (id=flush_dns)
+2026-02-07 23:40:08 - audit - INFO - Command executed: ipconfig /displaydns (admin=False)
+2026-02-07 23:40:08 - audit - INFO - Command SUCCESS: ipconfig /displaydns (code=0)
+2026-02-07 23:40:24 - audit - INFO - Command executed: ipconfig /flushdns (admin=False)
+2026-02-07 23:40:24 - audit - INFO - Command SUCCESS: ipconfig /flushdns (code=0)
+2026-02-07 23:40:28 - audit - INFO - Command executed: ipconfig /displaydns (admin=False)
+2026-02-07 23:40:28 - audit - INFO - Command SUCCESS: ipconfig /displaydns (code=0)
