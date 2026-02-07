@@ -147,9 +147,8 @@ class DiagnosticsTab:
         # Results display
         self.results_text = ctk.CTkTextbox(results_frame, height=300)
         self.results_text.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
+        self.results_text.insert("1.0", "No test results yet. Run a diagnostic test to see results here.")
         self.results_text.configure(state="disabled")
-            "1.0", "No test results yet. Run a diagnostic test to see results here."
-        )
 
     def _run_ping_test(self) -> None:
         """Run ping test."""

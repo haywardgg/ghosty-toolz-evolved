@@ -220,9 +220,12 @@ class SettingsTab:
                 # Restore all registry changes to defaults
                 logger.info("Restoring all registry changes to defaults...")
                 try:
-                    # This method should be implemented in RegistryManager
+                    # Note: restore_all_to_defaults() is not yet implemented in RegistryManager
+                    # For now, we only clear backups. TODO: Implement full restore functionality
                     if hasattr(registry_manager, 'restore_all_to_defaults'):
                         registry_manager.restore_all_to_defaults()
+                    else:
+                        logger.warning("restore_all_to_defaults() not implemented, skipping registry restore")
                 except Exception as e:
                     logger.warning(f"Failed to restore registry defaults: {e}")
 
