@@ -455,7 +455,9 @@ class DangerTab:
                 )
                 self.parent.after(0, self._refresh_history)
                 # Update button state after applying tweak
-                self.parent.after(0, lambda: self._update_tweak_button_state(tweak.id))
+                # Capture tweak_id in local variable to avoid closure issues
+                tweak_id_to_update = tweak.id
+                self.parent.after(0, lambda tid=tweak_id_to_update: self._update_tweak_button_state(tid))
 
             except RegistryError as e:
                 logger.error(f"Failed to apply tweak: {e}")

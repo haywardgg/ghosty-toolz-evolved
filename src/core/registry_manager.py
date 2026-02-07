@@ -321,8 +321,15 @@ class RegistryManager:
                 # <key path>
                 #     <value_name>    <value_type>    <value_data>
                 output = result.stdout
-                if tweak.value_data in output:
-                    return True
+                
+                # Split by lines and find the line with the value
+                for line in output.split('\n'):
+                    line = line.strip()
+                    if line and tweak.value_name in line:
+                        # Check if the value data appears after the value type
+                        parts = line.split()
+                        if len(parts) >= 3 and tweak.value_data in parts[-1]:
+                            return True
             return False
         except Exception as e:
             logger.debug(f"Error checking tweak {tweak_id}: {e}")

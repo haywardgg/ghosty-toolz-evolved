@@ -60,7 +60,7 @@ The application uses the native Windows `reg export` command to create backups. 
 For reliability and to maintain proper file format:
 - Only one registry key can be backed up at a time
 - Multiple keys require separate backup operations
-- This prevents file concatenation issues that corrupt the registry file format
+- This design prevents potential file concatenation issues that could corrupt the registry file format
 
 ### Backup Verification
 
