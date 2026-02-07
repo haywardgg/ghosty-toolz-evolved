@@ -1,54 +1,133 @@
-# 🛠️ Ghosty Tools – Technician’s Ritual Suite
+# 🛠️ Ghosty Tools Pro
 
-**Simple one-click repair tool for reclaiming your system.**  
-Built for technicians, learners, and digital guardians alike.
+**Professional Windows System Maintenance Tool v2.0.0**
 
----
+A comprehensive, secure, and modern system maintenance suite for Windows, completely redesigned with a focus on security, modularity, and user experience.
 
-## 🔗 Follow the Journey  
-Come hang out and learn with me on Twitch:  
-👉 [twitch.tv/ghostshadow_plays](https://www.twitch.tv/ghostshadow_plays)  
-We’re all noobs still—every click is a step toward mastery.
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](https://www.microsoft.com/windows)
 
 ---
 
-## ⚙️ How to Use  
-- Open the `.py` file using your preferred software.  
-- **Run as Administrator** — some rituals require elevated access.  
-- GUI and audio feedback included for immersive technician flow.
+## ✨ Features
 
-![Updated GUI](https://github.com/user-attachments/assets/e59dccad-3ed4-42c6-92db-7c1db7e53f5b)
+### 🖥️ **System Monitoring**
+- Real-time CPU, RAM, and disk usage tracking
+- Battery status monitoring
+- Network statistics and interface monitoring
+- Configurable monitoring intervals
 
----
+### 🔧 **System Maintenance**
+- DNS cache flushing
+- System restore point creation
+- Comprehensive system maintenance (SFC, DISM)
+- Disk health checking
+- Safe command execution with validation
+- Audit logging for all operations
 
-## 🧰 Features
+### 💾 **Backup & Restore**
+- File and folder backup with compression
+- Backup metadata tracking
+- Checksum verification
+- Automated old backup cleanup
 
-- 🧹 Temp file cleanup  
-- 🛡️ Telemetry disabling  
-- 🕰️ Restore point creation  
-- 🧱 Disk defragmentation  
-- 🔄 Windows Update control  
-- 🌐 Network speed test  
-- 🌙 Dark mode toggle  
-- 🎮 Mini-games (because even technicians need play)
+### 🔒 **Security Features**
+- Vulnerability scanning
+- Firewall status monitoring
+- Security configuration checks
+- UAC and Windows Defender monitoring
 
----
-
-## 📜 License  
-Ghosty Tools is licensed under **GNU GPLv3**.  
-This means:
-- You’re free to use, modify, and share it.
-- Any changes must also remain open-source.
-- The technician legacy stays protected.
-
-See the [LICENSE](./LICENSE) file for full terms.
-
----
-
-## 🧙‍♂️ Mythos  
-Ghosty Tools isn’t just a utility—it’s a technician’s altar.  
-Every function is a ritual. Every log is a legacy.  
-Built to honor earned mastery and protect users from digital decay.
+### ⚙️ **Settings & Configuration**
+- Theme customization (dark/light/system)
+- Configurable monitoring intervals
+- Persistent settings storage
 
 ---
 
+## 🚀 Quick Start
+
+### Prerequisites
+
+- **Python 3.8+**
+- **Windows 10/11**
+- **Administrator privileges** (for some operations)
+
+### Installation
+
+1. Clone and install:
+   ```bash
+   git clone https://github.com/haywardgg/ghosty-toolz-evolved.git
+   cd ghosty-toolz-evolved
+   pip install -r requirements.txt
+   ```
+
+2. Run the application:
+   ```bash
+   python src/main.py
+   ```
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── main.py                     # Entry point
+├── core/                       # Core modules
+│   ├── system_operations.py
+│   ├── backup_manager.py
+│   ├── security_scanner.py
+│   └── monitoring.py
+├── gui/                        # User interface
+│   ├── main_window.py
+│   └── tabs/
+└── utils/                      # Utilities
+    ├── logger.py
+    ├── config.py
+    └── validators.py
+```
+
+---
+
+## 🔒 Security
+
+- No automatic privilege escalation
+- Input validation for all commands
+- Safe command execution with timeouts
+- Comprehensive audit logging
+- Confirmation dialogs for destructive operations
+
+---
+
+## 📝 License
+
+GNU General Public License v3.0 - See [LICENSE](LICENSE)
+
+---
+
+## 📊 Changelog
+
+### Version 2.0.0
+
+**Complete Rewrite**
+
+#### Added ✨
+- Modern tabbed interface
+- Security scanner
+- Backup manager
+- Real-time monitoring
+- Configuration system
+- Audit logging
+
+#### Removed ❌
+- Mini games
+- Background music
+- Automatic admin elevation
+- Unsafe registry tweaks
+
+See [CHANGELOG.md](CHANGELOG.md) for full details.
+
+---
+
+**Made with ❤️ for system administrators**
