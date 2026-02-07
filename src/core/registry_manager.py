@@ -775,6 +775,63 @@ class RegistryManager:
             audit_logger.error(f"Registry tweak failed: {tweak.name} - {str(e)}")
             raise RegistryError(f"Failed to apply tweak: {e}")
     
+    def restore_tweak_to_default(self, tweak_id: str) -> bool:
+        """
+        Restore a registry tweak to Windows default by deleting the registry value.
+        
+        Args:
+            tweak_id: ID of tweak to restore
+        
+        Returns:
+            True if successful
+        
+        Raises:
+            RegistryError: If restore fails
+        """
+        # Find tweak
+        tweak = None
+        for t in self.available_tweaks:
+            if t.id == tweak_id:
+                tweak = t
+                break
+        
+        if not tweak:
+            raise RegistryError(f"Tweak not found: {tweak_id}")
+        
+        logger.info(f"Restoring registry tweak to default: {tweak.name}")
+        audit_logger.info(f"Registry tweak restored to default: {tweak.name} (ID: {tweak_id})")
+        
+        try:
+            # Delete the registry value to restore to default
+            # If value name is empty, delete the entire key
+            if tweak.value_name:
+                result = subprocess.run(
+                    ["reg", "delete", tweak.registry_key, "/v", tweak.value_name, "/f"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+            else:
+                result = subprocess.run(
+                    ["reg", "delete", tweak.registry_key, "/f"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+            
+            # Return code 0 means success, 1 might mean the value/key didn't exist (which is fine)
+            if result.returncode not in [0, 1]:
+                logger.warning(f"Registry delete returned code {result.returncode}: {result.stderr}")
+            
+            logger.info(f"Registry tweak restored to default: {tweak.name}")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to restore registry tweak: {e}")
+            audit_logger.error(f"Registry tweak restore failed: {tweak.name} - {str(e)}")
+            raise RegistryError(f"Failed to restore tweak: {e}")
+    
     def undo_last_change(self) -> bool:
         """
         Undo the last registry change by restoring the most recent backup.
