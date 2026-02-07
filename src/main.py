@@ -106,6 +106,7 @@ def check_admin_privileges() -> bool:
         True if app should continue, False if user wants to exit
     """
     is_admin = SystemOperations.is_admin()
+    logger.info(f"Admin status check result: {is_admin}")
     
     if is_admin:
         logger.info("Running with administrator privileges")
@@ -113,31 +114,45 @@ def check_admin_privileges() -> bool:
         return True
     
     # Not admin - show dialog
-    logger.warning("Not running as administrator")
+    logger.warning("Not running as administrator - showing privilege selection dialog")
     
-    # Import tkinter for messagebox
-    import tkinter as tk
-    from tkinter import messagebox
-    
-    # Create hidden root window for dialog
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes('-topmost', True)
-    
-    # Show dialog
-    result = messagebox.askyesno(
-        "Administrator Privileges Required",
-        "Administrator privileges are required for advanced features:\n\n"
-        "• Some tweaks and maintenance operations require admin rights\n"
-        "• Registry modifications need elevated permissions\n"
-        "• System maintenance tools (SFC, DISM) require admin access\n\n"
-        "Run without admin? (Limited functionality)\n\n"
-        "YES = Continue with limited features\n"
-        "NO = Request admin elevation and restart",
-        icon='warning'
-    )
-    
-    root.destroy()
+    try:
+        # Import tkinter for messagebox
+        import tkinter as tk
+        from tkinter import messagebox
+        
+        logger.info("Initializing tkinter root window for dialog")
+        # Create hidden root window for dialog
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        
+        # Force window to be on top and activate
+        root.lift()
+        root.focus_force()
+        
+        logger.info("Showing admin privilege dialog to user")
+        # Show dialog
+        result = messagebox.askyesno(
+            "Administrator Privileges Required",
+            "Administrator privileges are required for advanced features:\n\n"
+            "• Some tweaks and maintenance operations require admin rights\n"
+            "• Registry modifications need elevated permissions\n"
+            "• System maintenance tools (SFC, DISM) require admin access\n\n"
+            "Run without admin? (Limited functionality)\n\n"
+            "YES = Continue with limited features\n"
+            "NO = Request admin elevation and restart",
+            icon='warning'
+        )
+        
+        logger.info(f"User dialog result: {result}")
+        root.destroy()
+    except Exception as e:
+        logger.error(f"Failed to show admin privilege dialog: {e}", exc_info=True)
+        # If dialog fails, default to continuing without admin
+        logger.warning("Dialog failed - defaulting to non-admin mode")
+        AdminState.set_admin_mode(is_admin=False, declined=True)
+        return True
     
     if result:  # User chose YES - continue without admin
         logger.info("User chose to continue without admin privileges")
