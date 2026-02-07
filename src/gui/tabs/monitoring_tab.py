@@ -13,6 +13,9 @@ from src.core.performance_profiler import PerformanceProfiler
 
 logger = get_logger("monitoring_tab")
 
+# Conversion constants
+BYTES_TO_MB = 1024**2
+
 
 class MonitoringTab:
     """System monitoring tab with real-time resource display."""
@@ -283,7 +286,7 @@ class MonitoringTab:
             self.cpu_freq_label.configure(text=f"Frequency: {freq:.0f} MHz")
             self.cpu_progress.set(percent / 100)
         
-        # Schedule on main thread (0ms delay = next event loop iteration)
+        # Schedule on main thread as soon as possible
         self.parent.after(0, update_ui)
 
     def _update_ram_display(self, data: Dict[str, Any]) -> None:
@@ -304,7 +307,7 @@ class MonitoringTab:
             self.ram_available_label.configure(text=f"Available: {available_gb:.1f} GB")
             self.ram_progress.set(percent / 100)
         
-        # Schedule on main thread (0ms delay = next event loop iteration)
+        # Schedule on main thread as soon as possible
         self.parent.after(0, update_ui)
 
     def _update_disk_display(self, data: Dict[str, Any]) -> None:
@@ -332,7 +335,7 @@ class MonitoringTab:
 
             self.disk_info_text.configure(state="disabled")
         
-        # Schedule on main thread (0ms delay = next event loop iteration)
+        # Schedule on main thread as soon as possible
         self.parent.after(0, update_ui)
 
     def _update_battery_display(self, data: Dict[str, Any]) -> None:
@@ -358,7 +361,7 @@ class MonitoringTab:
             self.battery_time_label.configure(text=f"Time: {time_left}")
             self.battery_progress.set(percent / 100)
         
-        # Schedule on main thread (0ms delay = next event loop iteration)
+        # Schedule on main thread as soon as possible
         self.parent.after(0, update_ui)
 
     def _update_network_display(self, data: Dict[str, Any]) -> None:
@@ -367,8 +370,8 @@ class MonitoringTab:
             return
 
         # Extract data outside closure to avoid late binding issues
-        bytes_sent = data.get("bytes_sent", 0) / (1024**2)  # Convert to MB
-        bytes_recv = data.get("bytes_recv", 0) / (1024**2)
+        bytes_sent = data.get("bytes_sent", 0) / BYTES_TO_MB  # Convert to MB
+        bytes_recv = data.get("bytes_recv", 0) / BYTES_TO_MB
         interfaces = data.get("interfaces", [])
         
         # Build detailed network info text
@@ -458,7 +461,7 @@ class MonitoringTab:
             self.net_details_text.insert("1.0", info_text)
             self.net_details_text.configure(state="disabled")
         
-        # Schedule on main thread (0ms delay = next event loop iteration)
+        # Schedule on main thread as soon as possible
         self.parent.after(0, update_ui)
 
 
