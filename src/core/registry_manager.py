@@ -392,7 +392,7 @@ class RegistryManager:
                             self.available_tweaks.append(tweak)
                             logger.debug(f"Loaded tweak: {tweak.id}")
                         else:
-                            logger.warning(f"Duplicate tweak ID '{tweak.id}' found in {json_file}, skipping. Built-in tweaks cannot be overridden.")
+                            logger.warning(f"Duplicate tweak ID '{tweak.id}' found in {json_file}, skipping. Tweak IDs must be unique.")
                             
                     except Exception as e:
                         logger.warning(f"Failed to parse tweak in {json_file}: {e}")

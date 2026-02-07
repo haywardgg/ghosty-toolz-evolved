@@ -492,7 +492,8 @@ class SystemOperations:
                 if len(parts) >= 4:
                     # Join all parts from index 3 onwards as the adapter name (handles names with spaces)
                     adapter_name = ' '.join(parts[3:])
-                    if adapter_name and adapter_name not in adapters:
+                    # Validate adapter name (should not be empty or just whitespace)
+                    if adapter_name and adapter_name.strip() and adapter_name not in adapters:
                         adapters.append(adapter_name)
             
             return adapters
