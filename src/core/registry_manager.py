@@ -59,6 +59,9 @@ class RegistryError(Exception):
 class RegistryManager:
     """Professional Windows registry management with safety features."""
     
+    # Maximum number of registry backups to keep
+    MAX_REGISTRY_BACKUPS = 10
+    
     def __init__(self) -> None:
         """Initialize registry manager."""
         self.tmp_dir = Path(tempfile.gettempdir()) / "ghosty_toolz_registry_backups"
@@ -275,6 +278,77 @@ class RegistryManager:
         """
         return self.available_tweaks
     
+    def _get_tweak_by_id(self, tweak_id: str) -> Optional[RegistryTweak]:
+        """
+        Get a registry tweak by its ID.
+        
+        Args:
+            tweak_id: ID of the tweak to find
+        
+        Returns:
+            RegistryTweak if found, None otherwise
+        """
+        for tweak in self.available_tweaks:
+            if tweak.id == tweak_id:
+                return tweak
+        return None
+    
+    def is_tweak_applied(self, tweak_id: str) -> bool:
+        """
+        Check if a registry tweak is currently applied.
+        
+        Args:
+            tweak_id: ID of the tweak to check
+        
+        Returns:
+            True if the tweak is applied, False otherwise
+        """
+        tweak = self._get_tweak_by_id(tweak_id)
+        if not tweak:
+            return False
+        
+        try:
+            result = subprocess.run(
+                ["reg", "query", tweak.registry_key, "/v", tweak.value_name],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            
+            if result.returncode == 0:
+                # Parse output to check if value matches tweak.value_data
+                # The output format is:
+                # <key path>
+                #     <value_name>    <value_type>    <value_data>
+                output = result.stdout
+                if tweak.value_data in output:
+                    return True
+            return False
+        except Exception as e:
+            logger.debug(f"Error checking tweak {tweak_id}: {e}")
+            return False
+    
+    def _cleanup_old_backups(self) -> None:
+        """Keep only the most recent registry backups based on MAX_REGISTRY_BACKUPS."""
+        backups = sorted(
+            self.metadata.items(),
+            key=lambda x: x[1].timestamp,
+            reverse=True
+        )
+        
+        if len(backups) > self.MAX_REGISTRY_BACKUPS:
+            for backup_id, backup in backups[self.MAX_REGISTRY_BACKUPS:]:
+                try:
+                    backup_path = Path(backup.backup_path)
+                    if backup_path.exists():
+                        backup_path.unlink()
+                    del self.metadata[backup_id]
+                    logger.info(f"Deleted old backup: {backup_id}")
+                except Exception as e:
+                    logger.error(f"Failed to delete backup {backup_id}: {e}")
+            
+            self._save_metadata()
+    
     def backup_registry(self, description: str = "Manual backup", 
                        registry_keys: Optional[List[str]] = None) -> str:
         """
@@ -354,6 +428,9 @@ class RegistryManager:
             
             self.metadata[backup_id] = metadata
             self._save_metadata()
+            
+            # Cleanup old backups
+            self._cleanup_old_backups()
             
             logger.info(f"Registry backup completed: {backup_id}")
             audit_logger.info(f"Registry backup completed: {backup_id}")

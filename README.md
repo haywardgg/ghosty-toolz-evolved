@@ -110,6 +110,14 @@ src/
 
 ---
 
+## 📚 Documentation
+
+- [Registry Backup Management](docs/REGISTRY_BACKUP_MANAGEMENT.md) - Details on registry backup storage, cleanup, and restoration
+- [Security Advisory](docs/SECURITY_ADVISORY.md)
+- [UI Integration Summary](docs/UI_INTEGRATION_SUMMARY.md)
+
+---
+
 ## ⚠️ DANGER ZONE Warning
 
 **The DANGER ZONE tab contains advanced registry tweaks that can modify Windows system behavior.**
