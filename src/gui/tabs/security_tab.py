@@ -26,7 +26,6 @@ class SecurityTab:
         self.parent.grid_rowconfigure(1, weight=1)
         self.parent.grid_columnconfigure(0, weight=1)
 
-        self._create_header()
         self._create_content()
 
         logger.info("Security tab initialized")
