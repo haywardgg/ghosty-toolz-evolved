@@ -22,6 +22,9 @@ class DangerTab:
         """Initialize danger tab."""
         self.parent = parent
         self.registry_manager = RegistryManager()
+        
+        # Dictionary to store tweak buttons for state updates
+        self.tweak_buttons = {}
 
         self.parent.grid_rowconfigure(0, weight=1)
         self.parent.grid_columnconfigure(0, weight=1)
@@ -36,6 +39,9 @@ class DangerTab:
         content_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         content_frame.grid_columnconfigure(0, weight=1)
 
+        # Warning disclaimer
+        self._create_warning_disclaimer(content_frame)
+
         # Backup/Restore section
         self._create_backup_section(content_frame)
 
@@ -45,10 +51,30 @@ class DangerTab:
         # Backup history section
         self._create_history_section(content_frame)
 
+    def _create_warning_disclaimer(self, parent: ctk.CTkFrame) -> None:
+        """Create professional warning disclaimer."""
+        warning_frame = ctk.CTkFrame(parent, fg_color="#8B0000")
+        warning_frame.grid(row=0, column=0, sticky="ew", padx=5, pady=(5, 15))
+        warning_frame.grid_columnconfigure(0, weight=1)
+
+        warning_label = ctk.CTkLabel(
+            warning_frame,
+            text="⚠️ WARNING: Proceed at Your Own Risk ⚠️\n\n"
+                 "The registry modifications in this section can potentially cause system instability "
+                 "or break Windows functionality. Only proceed if you understand the implications.\n\n"
+                 "A registry backup is automatically created before each change, allowing you to "
+                 "restore previous settings if needed.",
+            font=ctk.CTkFont(size=12),
+            text_color="white",
+            wraplength=900,
+            justify="center"
+        )
+        warning_label.grid(row=0, column=0, padx=20, pady=15)
+
     def _create_backup_section(self, parent: ctk.CTkFrame) -> None:
         """Create backup/restore section."""
         backup_frame = ctk.CTkFrame(parent)
-        backup_frame.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+        backup_frame.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
         backup_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
@@ -95,7 +121,7 @@ class DangerTab:
     def _create_tweaks_section(self, parent: ctk.CTkFrame) -> None:
         """Create registry tweaks section."""
         tweaks_frame = ctk.CTkFrame(parent)
-        tweaks_frame.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
+        tweaks_frame.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
         tweaks_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
@@ -174,20 +200,31 @@ class DangerTab:
         )
         desc_label.grid(row=1, column=0, sticky="w")
 
+        # Check if tweak is already applied
+        is_applied = self.registry_manager.is_tweak_applied(tweak.id)
+        button_text = "✓ APPLIED" if is_applied else "APPLY"
+        button_state = "disabled" if is_applied else "normal"
+        fg_color = "gray" if is_applied else "green"
+
         # Apply button
         apply_btn = ctk.CTkButton(
             tweak_frame,
-            text="Apply",
+            text=button_text,
             command=lambda t=tweak: self._apply_tweak(t),
             width=100,
             height=35,
+            state=button_state,
+            fg_color=fg_color,
         )
         apply_btn.grid(row=0, column=2, padx=5, pady=5)
+        
+        # Store button reference for later updates
+        self.tweak_buttons[tweak.id] = apply_btn
 
     def _create_history_section(self, parent: ctk.CTkFrame) -> None:
         """Create backup history section."""
         history_frame = ctk.CTkFrame(parent)
-        history_frame.grid(row=2, column=0, sticky="nsew", padx=5, pady=5)
+        history_frame.grid(row=3, column=0, sticky="nsew", padx=5, pady=5)
         history_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
@@ -417,6 +454,10 @@ class DangerTab:
                     ),
                 )
                 self.parent.after(0, self._refresh_history)
+                # Update button state after applying tweak
+                # Capture tweak_id in local variable to avoid closure issues
+                tweak_id_to_update = tweak.id
+                self.parent.after(0, lambda tid=tweak_id_to_update: self._update_tweak_button_state(tid))
 
             except RegistryError as e:
                 logger.error(f"Failed to apply tweak: {e}")
@@ -429,6 +470,22 @@ class DangerTab:
                 )
 
         threading.Thread(target=task, daemon=True).start()
+    
+    def _update_tweak_button_state(self, tweak_id: str) -> None:
+        """Update the button state for a specific tweak."""
+        if tweak_id in self.tweak_buttons:
+            button = self.tweak_buttons[tweak_id]
+            is_applied = self.registry_manager.is_tweak_applied(tweak_id)
+            
+            button_text = "✓ APPLIED" if is_applied else "APPLY"
+            button_state = "disabled" if is_applied else "normal"
+            fg_color = "gray" if is_applied else "green"
+            
+            button.configure(
+                text=button_text,
+                state=button_state,
+                fg_color=fg_color
+            )
 
     def _refresh_history(self) -> None:
         """Refresh backup history display."""

@@ -65,12 +65,13 @@ class MonitoringTab:
         self.toggle_button.grid(row=0, column=1, padx=10, pady=10, sticky="e")
         
         # Performance Profile button
-        ctk.CTkButton(
+        self.perf_profile_btn = ctk.CTkButton(
             control_frame,
-            text="Run Performance Profile",
+            text="🔍 Run Performance Profile",
             command=self._run_performance_profile,
-            width=180,
-        ).grid(row=0, column=2, padx=10, pady=10, sticky="e")
+            width=200,
+        )
+        self.perf_profile_btn.grid(row=0, column=2, padx=10, pady=10, sticky="e")
         
         control_frame.grid_columnconfigure(0, weight=1)
 
@@ -371,6 +372,12 @@ class MonitoringTab:
 
         import threading
         from tkinter import messagebox
+        
+        # Disable button and update text
+        self.perf_profile_btn.configure(
+            state="disabled",
+            text="⏳ Please wait..."
+        )
 
         def task():
             try:
@@ -468,6 +475,9 @@ class MonitoringTab:
 
                 self.parent.after(0, show_report)
                 logger.info("Performance profile completed successfully")
+                
+                # Re-enable button
+                self.parent.after(0, self._reset_performance_button)
 
             except Exception as e:
                 logger.error(f"Performance profiling failed: {e}")
@@ -475,5 +485,15 @@ class MonitoringTab:
                     "Error",
                     f"Performance profiling failed:\n{str(e)}"
                 ))
+                
+                # Re-enable button even on error
+                self.parent.after(0, self._reset_performance_button)
 
         threading.Thread(target=task, daemon=True).start()
+    
+    def _reset_performance_button(self) -> None:
+        """Reset performance profile button to normal state."""
+        self.perf_profile_btn.configure(
+            state="normal",
+            text="🔍 Run Performance Profile"
+        )
