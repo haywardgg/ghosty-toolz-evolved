@@ -52,6 +52,39 @@ class DangerTab:
         # Backup history section
         self._create_history_section(content_frame)
 
+    def _format_registry_change_message(
+        self, tweak, before_value: Optional[Dict[str, str]], after_value: Optional[Dict[str, str]], 
+        is_restore: bool = False
+    ) -> str:
+        """
+        Format a message showing before/after registry changes.
+        
+        Args:
+            tweak: The registry tweak
+            before_value: Registry value before change
+            after_value: Registry value after change
+            is_restore: True if this is a restore operation (value deleted), False if apply
+        
+        Returns:
+            Formatted message string
+        """
+        before_text = f"{before_value['type']}: {before_value['data']}" if before_value else "Not Set"
+        
+        # For restore operations, the value is deleted so "Deleted (Default)" is accurate
+        # For apply operations, we should still be able to read it, so "Failed to read" indicates an error
+        if after_value:
+            after_text = f"{after_value['type']}: {after_value['data']}"
+        else:
+            after_text = "Deleted (Default)" if is_restore else "Failed to read"
+        
+        return (
+            f"\n\n📋 Registry Changes:\n"
+            f"Key: {tweak.registry_key}\n"
+            f"Value: {tweak.value_name or '(Default)'}\n\n"
+            f"Before: {before_text}\n"
+            f"After:  {after_text}"
+        )
+    
     def _create_warning_disclaimer(self, parent: ctk.CTkFrame) -> None:
         """Create professional warning disclaimer."""
         warning_frame = ctk.CTkFrame(parent, fg_color="#8B0000")
@@ -481,17 +514,8 @@ class DangerTab:
                     else ""
                 )
                 
-                # Build before/after message
-                before_text = f"{before_value['type']}: {before_value['data']}" if before_value else "Not Set"
-                after_text = f"{after_value['type']}: {after_value['data']}" if after_value else "Deleted (Default)"
-                
-                change_msg = (
-                    f"\n\n📋 Registry Changes:\n"
-                    f"Key: {tweak.registry_key}\n"
-                    f"Value: {tweak.value_name or '(Default)'}\n\n"
-                    f"Before: {before_text}\n"
-                    f"After:  {after_text}"
-                )
+                # Build before/after message using helper
+                change_msg = self._format_registry_change_message(tweak, before_value, after_value, is_restore=True)
 
                 self.parent.after(
                     0,
@@ -564,17 +588,8 @@ class DangerTab:
                     else ""
                 )
                 
-                # Build before/after message
-                before_text = f"{before_value['type']}: {before_value['data']}" if before_value else "Not Set"
-                after_text = f"{after_value['type']}: {after_value['data']}" if after_value else "Failed to read"
-                
-                change_msg = (
-                    f"\n\n📋 Registry Changes:\n"
-                    f"Key: {tweak.registry_key}\n"
-                    f"Value: {tweak.value_name or '(Default)'}\n\n"
-                    f"Before: {before_text}\n"
-                    f"After:  {after_text}"
-                )
+                # Build before/after message using helper
+                change_msg = self._format_registry_change_message(tweak, before_value, after_value, is_restore=False)
 
                 self.parent.after(
                     0,

@@ -264,7 +264,7 @@ class SettingsTab:
 
                 # Re-enable button and show success
                 self.parent.after(0, lambda: self.reset_button.configure(
-                    state="normal", text="🔄 RESET TO DEFAULTS"
+                    state="normal", text="↻  RESET TO DEFAULTS"
                 ))
                 
                 # Build success message with restore results
@@ -287,7 +287,7 @@ class SettingsTab:
                 error_msg = str(e)
                 logger.error(f"Failed to reset application: {error_msg}")
                 self.parent.after(0, lambda: self.reset_button.configure(
-                    state="normal", text="🔄 RESET TO DEFAULTS"
+                    state="normal", text="↻  RESET TO DEFAULTS"
                 ))
                 self.parent.after(0, lambda: messagebox.showerror(
                     "Reset Failed",

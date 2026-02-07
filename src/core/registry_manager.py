@@ -543,7 +543,7 @@ class RegistryManager:
                 if len(parts) >= 3:
                     name = parts[0]
                     reg_type = parts[1]
-                    data = parts[2] if len(parts) > 2 else ""
+                    data = parts[2]
                     
                     # Match the value name
                     if (not value_name and name == "(Default)") or name == value_name:
