@@ -1,5 +1,5 @@
 """
-System operations module for Ghosty Tools Pro.
+System operations module for Ghost Toolz Evolved.
 
 Provides safe, audited system operations with proper privilege management,
 input validation, and error handling.
@@ -250,7 +250,7 @@ class SystemOperations:
             SystemOperationError: If operation fails
         """
         if not description:
-            description = f"Created by Ghosty Tools Pro on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            description = f"Created by Ghost Toolz Evolved on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
         # Sanitize name
         safe_name = validators.sanitize_filename(name)

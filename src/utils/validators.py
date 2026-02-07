@@ -1,5 +1,5 @@
 """
-Input validation utilities for Ghosty Tools Pro.
+Input validation utilities for Ghost Toolz Evolved.
 
 Provides validation functions for user inputs, system paths, and command arguments.
 """
