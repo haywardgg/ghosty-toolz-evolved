@@ -514,11 +514,15 @@ class RegistryManager:
         Get current registry value.
         
         Args:
-            registry_key: Registry key path
-            value_name: Value name (empty string for default value)
+            registry_key: Registry key path (e.g. "HKEY_CURRENT_USER\\Software\\...")
+            value_name: Value name (empty string "" for default value, named string for specific values)
         
         Returns:
-            Dictionary with 'type' and 'data' keys, or None if not found
+            Dictionary with 'type' and 'data' keys if value exists, None if not found
+            
+        Note:
+            For default values, pass empty string "" as value_name (not None).
+            This method uses the /ve parameter for querying default registry values.
         """
         try:
             # Build command based on whether we're querying default value or named value
@@ -552,8 +556,9 @@ class RegistryManager:
                     reg_type = parts[1]
                     data = parts[2]
                     
-                    # Match the value name (handle both empty string and None for default values)
-                    is_default_value = (value_name == "" or value_name is None) and name == "(Default)"
+                    # Match the value name (handle empty string for default values)
+                    # Note: value_name should be empty string for defaults (not None)
+                    is_default_value = (value_name == "") and name == "(Default)"
                     is_named_value = value_name and name == value_name
                     
                     if is_default_value or is_named_value:

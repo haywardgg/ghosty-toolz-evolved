@@ -64,13 +64,14 @@ class DangerTab:
         Format a message showing before/after registry changes.
         
         Args:
-            tweak: The registry tweak
-            before_value: Registry value before change
-            after_value: Registry value after change
-            is_restore: True if this is a restore operation (value deleted), False if apply
+            tweak: The registry tweak being applied or restored
+            before_value: Registry value before change (dict with 'type' and 'data' keys, or None if not set)
+            after_value: Registry value after change (dict with 'type' and 'data' keys, or None)
+            is_restore: True if this is a restore operation where the value is expected to be deleted (after_value=None means success),
+                       False if this is an apply operation where the value should exist (after_value=None means error)
         
         Returns:
-            Formatted message string
+            Formatted message string showing the registry change details
         """
         # Safely format before text with fallback for missing keys
         if before_value and 'type' in before_value and 'data' in before_value:
