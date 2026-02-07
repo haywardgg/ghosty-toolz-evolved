@@ -104,7 +104,7 @@ def test_backup_nonexistent_key():
         # Check metadata was saved
         assert backup_id in rm.metadata
         metadata = rm.metadata[backup_id]
-        assert "backup skipped" in metadata.description.lower()
+        assert metadata.skipped is True
         
         print(f"✓ backup_registry handles non-existent key gracefully: {backup_id}")
 

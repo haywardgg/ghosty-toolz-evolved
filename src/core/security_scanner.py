@@ -84,7 +84,8 @@ class SecurityScanner:
             
             try:
                 self.system_ops.request_admin_elevation()
-                # App restarts as admin, this code won't execute
+                # If elevation succeeds, app restarts as admin and this code won't execute.
+                # If elevation fails or is declined, execution continues below.
             except Exception as e:
                 logger.error(f"Failed to obtain admin privileges: {e}")
                 logger.warning("⚠️  Continuing with limited scan - some checks will be skipped")

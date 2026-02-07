@@ -48,6 +48,7 @@ class RegistryBackup:
     backup_path: str
     description: str
     registry_keys: List[str]
+    skipped: bool = False  # True if backup was skipped because key didn't exist
 
 
 class RegistryError(Exception):
@@ -407,8 +408,9 @@ class RegistryManager:
                         backup_id=backup_id,
                         timestamp=datetime.now().isoformat(),
                         backup_path=str(backup_path),
-                        description=f"{description} (key did not exist - backup skipped)",
-                        registry_keys=registry_keys or ["Full backup"]
+                        description=description,
+                        registry_keys=registry_keys or ["Full backup"],
+                        skipped=True
                     )
                     
                     self.metadata[backup_id] = metadata
@@ -497,13 +499,13 @@ class RegistryManager:
         backup_path = Path(metadata.backup_path)
         
         # Check if backup was skipped (no file created)
+        if metadata.skipped:
+            logger.info(f"Backup was skipped (key didn't exist): {backup_id}")
+            logger.info("Nothing to restore - this is expected for new registry keys")
+            return True
+        
         if not backup_path.exists():
-            if "backup skipped" in metadata.description.lower():
-                logger.info(f"Backup was skipped (key didn't exist): {backup_id}")
-                logger.info("Nothing to restore - this is expected for new registry keys")
-                return True
-            else:
-                raise RegistryError(f"Backup file not found: {backup_path}")
+            raise RegistryError(f"Backup file not found: {backup_path}")
         
         logger.info(f"Restoring registry from backup: {backup_id}")
         audit_logger.info(f"Registry restore started: {backup_id}")
