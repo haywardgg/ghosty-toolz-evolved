@@ -425,7 +425,7 @@ This has been a complete rewrite of the original code hosted on Ghostshadows Git
 - Real-time monitoring
 - Configuration system
 - Audit logging
-- Registry tweaks with safety features
+- Registry tweaks with safety 
 - System Specs on settings page
 - and more...
 
@@ -440,3 +440,7 @@ See [CHANGELOG.md](CHANGELOG.md) for full details.
 ---
 
 **Made with ❤️ for system administrators**
+
+Original concept by Ghostshadow
+
+<img width="896" height="950" alt="ghostytools" src="https://github.com/user-attachments/assets/9c106c09-132e-4e24-aa13-e33b5c11bf63" />
