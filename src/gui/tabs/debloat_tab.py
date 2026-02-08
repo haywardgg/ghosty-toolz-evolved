@@ -88,7 +88,7 @@ class DebloatTab:
         row = self._create_action_buttons(content_frame, row)
         
         # Status section
-        row = self._create_status_section(content_frame, row)
+        # row = self._create_status_section(content_frame, row)
         
         # Update UI state
         self._update_ui_state()
@@ -448,7 +448,7 @@ class DebloatTab:
             width=150,
             height=40,
             font=ctk.CTkFont(size=13, weight="bold"),
-            fg_color="blue"
+         #   fg_color="blue"
         )
         self.scan_button.grid(row=2, column=0, padx=(10, 5), pady=5, sticky="w")
         
@@ -459,7 +459,7 @@ class DebloatTab:
             width=150,
             height=40,
             font=ctk.CTkFont(size=13, weight="bold"),
-            fg_color="red"
+        #    fg_color="red"
         )
         self.debloat_button.grid(row=2, column=2, padx=5, pady=5, sticky="e")
         
@@ -470,7 +470,7 @@ class DebloatTab:
             width=150,
             height=40,
             font=ctk.CTkFont(size=13, weight="bold"),
-            fg_color="orange"
+        #    fg_color="orange"
         )
         self.undo_button.grid(row=2, column=3, padx=(5, 10), pady=5, sticky="e")
         
