@@ -723,40 +723,6 @@ class DebloatTab:
         thread = threading.Thread(target=task, daemon=True)
         thread.start()
 
-    def _create_restore_point_manual(self) -> None:
-        """Create a restore point manually."""
-        if not AdminState.is_admin():
-            messagebox.showerror("Error", "Administrator privileges required to create restore point")
-            return
-        
-        self._write_terminal("Creating restore point...", "info")
-        
-        def task():
-            try:
-                success, message = self.bloat_remover.create_restore_point("Manual Debloat Restore Point")
-                
-                if success:
-                    self.parent.after(0, lambda: self._write_terminal(f"Restore point created successfully", "success"))
-                    self.parent.after(0, lambda: messagebox.showinfo("Success", "Restore point created successfully"))
-                    self.parent.after(0, self._refresh_restore_point_info)
-                else:
-                    self.parent.after(0, lambda: self._write_terminal(
-                        f"Failed to create restore point: {message}", "error"
-                    ))
-                    self.parent.after(0, lambda: messagebox.showerror(
-                        "Error", f"Failed to create restore point:\n{message}"
-                    ))
-
-            except Exception as e:
-                logger.error(f"Restore point creation failed: {e}")
-                self.parent.after(0, lambda ex=e: self._write_terminal(f"Error: {ex}", "error"))
-                self.parent.after(0, lambda ex=e: messagebox.showerror(
-                    "Error", f"Restore point creation failed:\n{ex}"
-                ))
-
-        thread = threading.Thread(target=task, daemon=True)
-        thread.start()
-
     def _scan_system(self) -> None:
         """Scan system for installed bloatware."""
         if not AdminState.is_admin():
