@@ -257,8 +257,6 @@ class SystemToolsTab:
         tools_container = ctk.CTkFrame(parent, fg_color="transparent")
         tools_container.grid_columnconfigure(0, weight=1)
         
-        self.category_frames[category.value] = tools_container
-        
         # Grid the container but hide it since categories start collapsed
         tools_container.grid(row=row + 1, column=0, sticky="ew", padx=20, pady=(5, 5))
         tools_container.grid_remove()  # Hide by default (collapsed state)
