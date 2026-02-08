@@ -164,7 +164,8 @@ class SystemToolsInstaller:
         self,
         command: str,
         timeout: int = 600,
-        check: bool = False
+        check: bool = False,
+        suppress_warnings: bool = False
     ) -> Tuple[bool, str, str]:
         """
         Execute a PowerShell command.
@@ -173,6 +174,7 @@ class SystemToolsInstaller:
             command: PowerShell command to execute
             timeout: Command timeout in seconds (default 600 for installations)
             check: Whether to check if command exists before running
+            suppress_warnings: Whether to suppress warning logs for failed commands
             
         Returns:
             Tuple of (success, stdout, stderr)
@@ -204,9 +206,13 @@ class SystemToolsInstaller:
             if success:
                 logger.debug(f"PowerShell command succeeded")
             else:
-                logger.warning(f"PowerShell command failed with code {result.returncode}")
-                if stderr:
-                    logger.debug(f"Error output: {stderr[:200]}")
+                # Only log warnings if not suppressed (e.g., during status checks)
+                if not suppress_warnings:
+                    logger.warning(f"PowerShell command failed with code {result.returncode}")
+                    if stderr:
+                        logger.debug(f"Error output: {stderr[:200]}")
+                else:
+                    logger.debug(f"PowerShell command failed with code {result.returncode} (expected for status check)")
             
             return success, stdout, stderr
             
@@ -237,7 +243,9 @@ class SystemToolsInstaller:
             return False, "No check command available"
         
         try:
-            success, stdout, stderr = self.execute_powershell(tool.check_command, timeout=30)
+            success, stdout, stderr = self.execute_powershell(
+                tool.check_command, timeout=30, suppress_warnings=True
+            )
             
             if success and stdout:
                 # Tool is installed

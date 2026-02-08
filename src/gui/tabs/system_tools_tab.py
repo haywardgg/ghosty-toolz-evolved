@@ -227,9 +227,14 @@ class SystemToolsTab:
     
     def _create_category_section(self, parent: ctk.CTkFrame, row: int, category: ToolCategory) -> None:
         """Create a collapsible category section."""
-        # Category header frame
-        category_header = ctk.CTkFrame(parent, fg_color="transparent")
-        category_header.grid(row=row, column=0, sticky="ew", padx=10, pady=(10, 0))
+        # Main category frame (contains both header and tools)
+        category_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        category_frame.grid(row=row, column=0, sticky="ew", padx=10, pady=(10, 0))
+        category_frame.grid_columnconfigure(0, weight=1)
+        
+        # Category header frame (always visible)
+        category_header = ctk.CTkFrame(category_frame, fg_color="transparent")
+        category_header.grid(row=0, column=0, sticky="ew")
         category_header.grid_columnconfigure(1, weight=1)  # Make middle column expand
         
         # Expand/collapse button
@@ -257,12 +262,10 @@ class SystemToolsTab:
         )
         category_label.grid(row=0, column=0, padx=(EXPAND_BUTTON_PADDING, 5), pady=5, sticky="w")
         
-        # Tools container
-        tools_container = ctk.CTkFrame(parent, fg_color="transparent")
+        # Tools container (collapsible, inside the category frame)
+        tools_container = ctk.CTkFrame(category_frame, fg_color="transparent")
+        tools_container.grid(row=1, column=0, sticky="ew", padx=10, pady=(5, 5))
         tools_container.grid_columnconfigure(0, weight=1)
-        
-        # Grid the container but hide it since categories start collapsed
-        tools_container.grid(row=row + 1, column=0, sticky="ew", padx=20, pady=(5, 5))
         tools_container.grid_remove()  # Hide by default (collapsed state)
         
         self.category_frames[category.value] = tools_container
