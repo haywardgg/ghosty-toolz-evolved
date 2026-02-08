@@ -43,6 +43,10 @@ class MaintenanceTab:
 
         # Create UI
         self._create_operations()
+        
+        # Set initial status
+        if self.main_window:
+            self.main_window.update_status("Ready")
 
         logger.info("Maintenance tab initialized")
 

@@ -32,6 +32,10 @@ class SecurityTab:
         self.parent.grid_columnconfigure(0, weight=1)
 
         self._create_content()
+        
+        # Set initial status
+        if self.main_window:
+            self.main_window.update_status("Ready")
 
         logger.info("Security tab initialized")
 
