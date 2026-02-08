@@ -55,6 +55,15 @@ A comprehensive, secure, and modern system maintenance suite for Windows, comple
 - Theme customization (dark/light/system)
 - Configurable monitoring intervals
 - Persistent settings storage
+- **PC Specifications Display** - View detailed system information:
+  - Operating System (edition, build, version)
+  - CPU (model, cores, threads, frequency)
+  - RAM (total, available, usage)
+  - Storage (all drives with capacity and type)
+  - GPU (model and VRAM)
+  - Motherboard (manufacturer and model)
+  - Network (hostname and IP addresses)
+  - One-click copy to clipboard for support sharing
 
 ---
 
@@ -114,6 +123,259 @@ src/
 - [Registry Backup Management](docs/REGISTRY_BACKUP_MANAGEMENT.md) - Details on registry backup storage, cleanup, and restoration
 - [Security Advisory](docs/SECURITY_ADVISORY.md)
 - [UI Integration Summary](docs/UI_INTEGRATION_SUMMARY.md)
+
+### 📝 Registry Tweaks Configuration
+
+The application uses `config/registry_tweaks.json` to manage Windows registry modifications. This allows you to customize, add, or remove registry tweaks.
+
+#### JSON Structure
+
+Each registry tweak in the JSON file has the following structure:
+
+```json
+{
+  "id": "unique_identifier",
+  "name": "Display Name",
+  "description": "What this tweak does",
+  "category": "Privacy|Performance|UI|Security|System",
+  "risk_level": "low|medium|high",
+  "requires_restart": true|false,
+  "apply": {
+    "key": "HKEY_LOCAL_MACHINE\\Path\\To\\Key",
+    "value_name": "ValueName",
+    "value_data": "0",
+    "value_type": "REG_DWORD"
+  },
+  "restore": {
+    "key": "HKEY_LOCAL_MACHINE\\Path\\To\\Key",
+    "value_name": "ValueName",
+    "value_data": "1",
+    "value_type": "REG_DWORD"
+  }
+}
+```
+
+#### Field Descriptions
+
+- **id**: Unique identifier for the tweak (lowercase with underscores)
+- **name**: Display name shown in the UI
+- **description**: Brief explanation of what the tweak does
+- **category**: Organizational category (Privacy, Performance, UI, Security, System)
+- **risk_level**: Safety indicator
+  - `low`: Safe changes (e.g., show file extensions)
+  - `medium`: Moderate impact (e.g., disable startup delay)
+  - `high`: Significant system changes (e.g., disable Windows Update)
+- **requires_restart**: Whether a system restart is needed for changes to take effect
+- **apply**: Registry settings to enable the tweak
+  - `key`: Full registry path (use double backslashes)
+  - `value_name`: Name of the registry value
+  - `value_data`: Data to set (string or number)
+  - `value_type`: Registry data type (REG_DWORD, REG_SZ, REG_BINARY, etc.)
+- **restore**: Registry settings to undo the tweak (same structure as apply)
+
+#### Adding New Tweaks
+
+1. Open `config/registry_tweaks.json`
+2. Add your new tweak object to the `tweaks` array:
+
+```json
+{
+  "id": "my_custom_tweak",
+  "name": "My Custom Tweak",
+  "description": "Description of what this does",
+  "category": "Performance",
+  "risk_level": "low",
+  "requires_restart": false,
+  "apply": {
+    "key": "HKEY_CURRENT_USER\\Software\\MyApp",
+    "value_name": "EnableFeature",
+    "value_data": "1",
+    "value_type": "REG_DWORD"
+  },
+  "restore": {
+    "key": "HKEY_CURRENT_USER\\Software\\MyApp",
+    "value_name": "EnableFeature",
+    "value_data": "0",
+    "value_type": "REG_DWORD"
+  }
+}
+```
+
+3. Save the file and restart the application
+4. The new tweak will appear in the DANGER ZONE tab
+
+#### Removing Tweaks
+
+To remove a tweak:
+1. Open `config/registry_tweaks.json`
+2. Locate the tweak object by its `id`
+3. Delete the entire object (including its opening and closing braces)
+4. Ensure proper JSON formatting (no trailing commas)
+5. Save and restart the application
+
+#### Important Safety Notes
+
+⚠️ **WARNING: Editing the Windows Registry can be dangerous!**
+
+- **Always backup your registry** before making manual changes
+- The application automatically creates backups before applying tweaks
+- Test tweaks on non-production systems first
+- Some tweaks may cause Windows features to stop working
+- Incorrect registry values can make Windows unstable or unbootable
+- Use the RESTORE button to undo applied tweaks
+- Registry backups are stored in: `%TEMP%\ghosty_toolz_registry_backups\`
+
+#### How Tweaks Are Applied
+
+1. User clicks APPLY button in DANGER ZONE tab
+2. Application creates automatic backup of current registry value
+3. Registry value is changed according to `apply` settings
+4. Backup is saved with timestamp for later restoration
+5. If `requires_restart` is true, user is notified to restart
+
+#### Effect of Applying Tweaks
+
+- Tweaks modify Windows registry keys to change system behavior
+- Changes can affect privacy settings, UI appearance, performance, or system features
+- Some tweaks take effect immediately, others require restart
+- All changes are reversible using the RESTORE button
+- Original values are preserved in automatic backups
+
+---
+
+### 🏗️ Building the Application
+
+You can create a standalone executable (.exe) file that doesn't require Python to be installed.
+
+#### Prerequisites
+
+Install PyInstaller (included in `requirements.txt`):
+
+```bash
+pip install -r requirements.txt
+```
+
+Or install it separately:
+
+```bash
+pip install pyinstaller
+```
+
+#### Build Command
+
+Run the build script from the project root:
+
+```bash
+python build.py
+```
+
+This will:
+- Create a standalone executable
+- Bundle all dependencies (customtkinter, psutil, etc.)
+- Include the `images/` and `config/` folders
+- Request UAC admin elevation when launched
+- Use windowed mode (no console window)
+
+#### Build Output
+
+After building (takes 1-3 minutes), you'll find:
+
+```
+dist/
+└── GhostyToolzEvolved/
+    ├── GhostyToolzEvolved.exe  ← Main executable
+    ├── images/                  ← Bundled images
+    ├── config/                  ← Configuration files
+    └── [various DLL files]      ← Required libraries
+```
+
+#### Build Options
+
+The `build.py` script uses these PyInstaller options:
+
+- `--onedir`: Creates a folder with the exe and dependencies (recommended)
+- `--windowed`: No console window (GUI only)
+- `--uac-admin`: Prompts for admin elevation on launch
+- `--hidden-import`: Ensures critical modules are included
+- `--clean`: Cleans cache before building
+
+To customize the build:
+1. Edit `build.py`
+2. Modify the `args` list
+3. Re-run `python build.py`
+
+#### Alternative: One-File Build
+
+For a single executable (slower startup, but portable):
+
+Edit `build.py` and change `--onedir` to `--onefile`:
+
+```python
+args = [
+    'src/main.py',
+    '--onefile',  # ← Changed from --onedir
+    '--windowed',
+    # ... rest of options
+]
+```
+
+---
+
+### 📦 Using the Pre-built Application
+
+If you downloaded a pre-built release from the `dist/` folder:
+
+#### Quick Start
+
+1. **Download** the `GhostyToolzEvolved` folder from the `dist/` directory
+2. **Extract** to a location of your choice (e.g., `C:\Program Files\GhostyToolz\`)
+3. **Run** `GhostyToolzEvolved.exe`
+4. **Allow** UAC prompt (admin required for most features)
+
+#### Is It Portable?
+
+✅ **Yes, it's portable!**
+
+- No installation required
+- No registry entries (except when using DANGER ZONE features)
+- Can run from USB drive or any folder
+- Settings stored in application directory
+- Logs saved to `logs/` subfolder
+
+#### Moving the Application
+
+Simply move the entire `GhostyToolzEvolved` folder to a new location. All settings and configurations will remain intact.
+
+#### Antivirus False Positives
+
+⚠️ **Common Issue**: Antivirus software may flag the executable as suspicious.
+
+**Why this happens:**
+- PyInstaller executables are sometimes flagged due to their packing method
+- UAC elevation request can trigger heuristic detection
+- Registry modification features may be seen as risky
+
+**Solutions:**
+1. **Add to exclusions**: Add the folder to your antivirus exclusion list
+2. **Build from source**: Compile yourself using `build.py` (see above)
+3. **Submit false positive**: Report to your antivirus vendor
+4. **Verify integrity**: Check the SHA256 hash against the release notes
+
+**Building from source is always the safest option if you're concerned about security.**
+
+#### Requirements
+
+- **Windows 10/11** (64-bit)
+- **No Python installation needed** (everything is bundled)
+- **Administrator privileges** for most features
+
+#### Updating
+
+To update to a new version:
+1. Download the new release
+2. Close the old application
+3. Replace the `GhostyToolzEvolved` folder
+4. Your settings in `config/config.yaml` will be preserved
 
 ---
 
