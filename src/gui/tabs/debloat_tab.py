@@ -149,7 +149,7 @@ class DebloatTab:
         
         title = ctk.CTkLabel(
             restore_frame,
-            text="🔄 System Restore Point",
+            text="System Restore Point",
             font=ctk.CTkFont(size=16, weight="bold")
         )
         title.grid(row=0, column=0, columnspan=3, padx=10, pady=(10, 5), sticky="w")
@@ -162,16 +162,6 @@ class DebloatTab:
         )
         self.restore_point_checkbox.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="w")
         self.restore_point_checkbox.select()  # Checked by default
-        
-        # Create restore point button
-        create_rp_button = ctk.CTkButton(
-            restore_frame,
-            text="Create Restore Point Now",
-            command=self._create_restore_point_manual,
-            width=200,
-            fg_color="green"
-        )
-        create_rp_button.grid(row=2, column=0, padx=10, pady=5, sticky="w")
         
         # Restore point info
         self.restore_point_info_label = ctk.CTkLabel(
