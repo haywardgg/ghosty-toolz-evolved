@@ -188,7 +188,7 @@ class MaintenanceTab:
         maint_frame.grid_columnconfigure(0, weight=1)
 
         title = ctk.CTkLabel(
-            maint_frame, text="🛠️ System Maintenance", font=ctk.CTkFont(size=14, weight="bold")
+            maint_frame, text="System Maintenance", font=ctk.CTkFont(size=14, weight="bold")
         )
         title.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
