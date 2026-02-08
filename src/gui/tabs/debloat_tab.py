@@ -229,7 +229,7 @@ class DebloatTab:
         # Header frame (always visible)
         header_frame = ctk.CTkFrame(category_frame, fg_color="transparent")
         header_frame.grid(row=0, column=0, sticky="ew")
-        header_frame.grid_columnconfigure(0, weight=1)
+        header_frame.grid_columnconfigure(1, weight=1)  # Make middle column expand
         
         # Category title with expand/collapse button
         expand_button = ctk.CTkButton(
@@ -253,9 +253,9 @@ class DebloatTab:
             font=ctk.CTkFont(size=14, weight="bold"),
             anchor="w"
         )
-        category_label.grid(row=0, column=1, padx=(0, 5), pady=5, sticky="w")
+        category_label.grid(row=0, column=0, padx=(35, 5), pady=5, sticky="w")
         
-        # Select all / Deselect all buttons
+        # Select all / Deselect all buttons (aligned right)
         select_all_btn = ctk.CTkButton(
             header_frame,
             text="Select All",
@@ -264,7 +264,7 @@ class DebloatTab:
             height=25,
             font=ctk.CTkFont(size=11)
         )
-        select_all_btn.grid(row=0, column=2, padx=2, pady=5)
+        select_all_btn.grid(row=0, column=2, padx=2, pady=5, sticky="e")
         
         deselect_all_btn = ctk.CTkButton(
             header_frame,
@@ -275,7 +275,7 @@ class DebloatTab:
             font=ctk.CTkFont(size=11),
             fg_color="gray"
         )
-        deselect_all_btn.grid(row=0, column=3, padx=2, pady=5)
+        deselect_all_btn.grid(row=0, column=3, padx=2, pady=5, sticky="e")
         
         # Items frame (collapsible)
         items_frame = ctk.CTkFrame(category_frame)
@@ -420,9 +420,9 @@ class DebloatTab:
         """Create action buttons section."""
         button_frame = ctk.CTkFrame(parent, fg_color="transparent")
         button_frame.grid(row=start_row, column=0, sticky="ew", padx=5, pady=5)
-        # Remove weight from column 0 to allow left alignment
+        button_frame.grid_columnconfigure(0, weight=1)  # Make column 0 expand to push buttons right
         
-        # Progress bar
+        # Progress bar - full width on its own row
         self.progress_bar = ctk.CTkProgressBar(button_frame)
         self.progress_bar.grid(row=0, column=0, columnspan=4, padx=10, pady=5, sticky="ew")
         self.progress_bar.set(0)
@@ -435,7 +435,7 @@ class DebloatTab:
         )
         self.progress_label.grid(row=1, column=0, columnspan=4, padx=10, pady=(0, 5), sticky="w")
         
-        # Buttons
+        # Buttons row - Scan System on left, Start Debloat and Undo Changes on right
         self.scan_button = ctk.CTkButton(
             button_frame,
             text="Scan System",
@@ -456,7 +456,7 @@ class DebloatTab:
             font=ctk.CTkFont(size=13, weight="bold"),
             fg_color="red"
         )
-        self.debloat_button.grid(row=2, column=1, padx=5, pady=5, sticky="w")
+        self.debloat_button.grid(row=2, column=2, padx=5, pady=5, sticky="e")
         
         self.undo_button = ctk.CTkButton(
             button_frame,
@@ -467,7 +467,7 @@ class DebloatTab:
             font=ctk.CTkFont(size=13, weight="bold"),
             fg_color="orange"
         )
-        self.undo_button.grid(row=2, column=2, padx=5, pady=5, sticky="w")
+        self.undo_button.grid(row=2, column=3, padx=(5, 10), pady=5, sticky="e")
         
         return start_row + 1
     
@@ -588,17 +588,20 @@ class DebloatTab:
                 for checkbox in category_checkboxes.values():
                     checkbox.configure(state="disabled")
         else:
-            # Enable based on admin status and operation state
+            # Enable based on operation state (agreement accepted)
             if self.restore_point_checkbox:
                 self.restore_point_checkbox.configure(state="normal")
             
             if not self.is_scanning and not self.is_removing:
+                # Enable scan button when agreement accepted (admin check happens at runtime)
                 if self.scan_button:
-                    self.scan_button.configure(state="normal" if is_admin else "disabled")
+                    self.scan_button.configure(state="normal")
+                # Enable debloat button when agreement accepted and items selected
                 if self.debloat_button:
-                    self.debloat_button.configure(state="normal" if is_admin and len(self.selected_items) > 0 else "disabled")
+                    self.debloat_button.configure(state="normal" if len(self.selected_items) > 0 else "disabled")
+                # Enable undo button when agreement accepted
                 if self.undo_button:
-                    self.undo_button.configure(state="normal" if is_admin else "disabled")
+                    self.undo_button.configure(state="normal")
                 
                 # Enable checkboxes
                 for category_checkboxes in self.category_checkboxes.values():
