@@ -10,7 +10,7 @@ A comprehensive, secure, and modern system maintenance suite for Windows, comple
 <img width="1920" height="1032" alt="Diagnostics" src="https://github.com/user-attachments/assets/e6ecc390-2ec4-403d-b306-47d61d85d2d7" />
 <img width="1920" height="1032" alt="Maintenance" src="https://github.com/user-attachments/assets/27cd2d48-7aed-431f-bca2-cf6f29f45282" />
 <img width="1920" height="1032" alt="DangerZoneREGISTRY" src="https://github.com/user-attachments/assets/3201f7a2-e9d9-429b-ba42-d9ba0f815d57" />
-<img width="1920" height="1032" alt="Screenshot 2026-02-07 171013" src="https://github.com/user-attachments/assets/6682e4e3-f272-4e6d-b992-fcacbdd29720" />
+<img width="1920" height="1032" alt="Settings__" src="https://github.com/user-attachments/assets/5e3d55b0-83fe-4ef7-a107-6b5a41df1f95" />
 
 ---
 
