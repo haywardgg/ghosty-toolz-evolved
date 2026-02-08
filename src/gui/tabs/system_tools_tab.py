@@ -22,6 +22,10 @@ from src.core.system_tools_installer import (
 
 logger = get_logger("system_tools_tab")
 
+# UI Layout Constants
+EXPAND_BUTTON_PADDING = 35  # Left padding for category label to appear next to arrow
+STATUS_COLUMN = 99  # High column number for status label to ensure right-alignment
+
 
 class SystemToolsTab:
     """System Tools Installation tab for installing developer tools."""
@@ -251,7 +255,7 @@ class SystemToolsTab:
             font=ctk.CTkFont(size=14, weight="bold"),
             anchor="w"
         )
-        category_label.grid(row=0, column=0, padx=(35, 5), pady=5, sticky="w")
+        category_label.grid(row=0, column=0, padx=(EXPAND_BUTTON_PADDING, 5), pady=5, sticky="w")
         
         # Tools container
         tools_container = ctk.CTkFrame(parent, fg_color="transparent")
@@ -312,14 +316,14 @@ class SystemToolsTab:
             )
             restart_badge.grid(row=0, column=badge_col, padx=(10, 0), pady=0, sticky="w")
         
-        # Status label (right side of top row - always in column 99 to stay right)
+        # Status label (right side of top row - uses high column number for right-alignment)
         status_label = ctk.CTkLabel(
             top_frame,
             text="Checking...",
             font=ctk.CTkFont(size=11),
             text_color="gray"
         )
-        status_label.grid(row=0, column=99, padx=(10, 0), pady=0, sticky="e")
+        status_label.grid(row=0, column=STATUS_COLUMN, padx=(10, 0), pady=0, sticky="e")
         self.tool_status_labels[tool.id] = status_label
         
         # Bottom row: Description
