@@ -593,7 +593,7 @@ class DebloatTab:
                     self.scan_button.configure(state="normal")
                 # Enable debloat button when agreement accepted and items selected
                 if self.debloat_button:
-                    self.debloat_button.configure(state="normal" if len(self.selected_items) > 0 else "disabled")
+                    self.debloat_button.configure(state="normal")
                 # Enable undo button when agreement accepted
                 if self.undo_button:
                     self.undo_button.configure(state="normal")
