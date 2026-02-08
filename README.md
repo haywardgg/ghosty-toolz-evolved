@@ -340,29 +340,48 @@ args = [
 ---
 
 ### 📦 Using the Pre-built Application
-### How to Install HaywardTechSuite Safely
+## How to verify the authenticity of `HaywardTechSuite`
 
-This tool has been signed with a **self-signed certificate**, which means it might trigger warnings from your system. Here's how to verify and use the app safely:
+This file is **digitally signed** and timestamped using a trusted certification authority. Follow these steps to ensure the authenticity of the executable:
 
-1. **Download and Save the File**:
-   - Go to the [Releases page](https://github.com/haywardgg/hayward-tech-suite/releases) and download the latest version of `HaywardTechSuite.exe`.
+### **Step 1: Download the file**
+Download the latest version of `HaywardTechSuite.exe` from the [Releases page](https://github.com/haywardgg/hayward-tech-suite/releases).
 
-2. **Verify the Signature**:
-   - Right-click `HaywardTechSuite.exe` and select **Properties**.
-   - Go to the **Digital Signatures** tab to confirm the file is signed. You should see:
-     - Name of Signer: **LeeHayward**
-     - Signing Time: [Timestamp]
+### **Step 2: Verify the Digital Signature**
+1. Right-click on the downloaded `HaywardTechSuite.exe` file.
+2. Select **Properties > Digital Signatures**.
+3. Verify the following information:
+   - **Name of signer**: `LeeHayward`
+   - **Timestamp Authority**:
+     - **Issuer Name**: `GlobalSign`
+     - **Expiry Date**: `Sun Dec 10, 2034`
+4. Ensure that the file signature is marked as valid.
 
-3. **Run the Application** (if prompted by your system about the unknown signer):
-   - When your operating system shows a security warning about running an unknown app, choose advanced options to bypass the warning.
-   - Alternatively, you can manually verify the public certificate or compile the application from source if you prefer.
+### **Step 3: Run the Application**
+If Windows SmartScreen displays a warning, click **More Info**, then choose **Run Anyway** to trust the signed executable.
 
-#### Quick Start
+---
 
-1. **Download** the `GhostyToolzEvolved` folder from the `dist/` directory
-2. **Extract** to a location of your choice (e.g., `C:\Program Files\GhostyToolz\`)
-3. **Run** `GhostyToolzEvolved.exe`
-4. **Allow** UAC prompt (admin required for most features)
+#### Technical Details
+For advanced users, here are the technical details of the applied timestamp:
+- **Timestamp Authority:** Verified by GlobalSign
+- **GlobalSign Issuer Details**:
+  - Issued to: GlobalSign
+  - Issued by: GlobalSign
+  - Expires: Sun Dec 10 00:00:00 2034
+  - SHA1 hash: 8094640EB5A7A1CA119C1FDDD59F810263A7FBD1
+- **Intermediate CA Details**:
+  - Issued to: GlobalSign Timestamping CA - SHA384 - G4
+  - Issued by: GlobalSign
+  - Expires: Sun Dec 10 00:00:00 2034
+  - SHA1 hash: F585500925786F88E721D235240A2452AE3D23F9
+- **Leaf Certificate**:
+  - Issued to: GlobalSign TSA for CodeSign1 - R6
+  - Issued by: GlobalSign Timestamping CA - SHA384 - G4
+  - Expires: Sun Dec 10 00:00:00 2034
+  - SHA1 hash: C625B554BF13E9CB8A5C099BC37BF58485D890E5
+
+---
 
 #### Is It Portable?
 
@@ -376,7 +395,7 @@ This tool has been signed with a **self-signed certificate**, which means it mig
 
 #### Moving the Application
 
-Simply move the entire `GhostyToolzEvolved` folder to a new location. All settings and configurations will remain intact.
+Simply move the entire `HaywardTechSuite` folder to a new location. All settings and configurations will remain intact.
 
 #### Antivirus False Positives
 
@@ -406,7 +425,7 @@ Simply move the entire `GhostyToolzEvolved` folder to a new location. All settin
 To update to a new version:
 1. Download the new release
 2. Close the old application
-3. Replace the `GhostyToolzEvolved` folder
+3. Replace the `HaywardTechSuite` folder
 4. Your settings in `config/config.yaml` will be preserved
 
 ---
@@ -419,7 +438,7 @@ To update to a new version:
 - HIGH risk tweaks can cause system instability
 - Automatic backups are created before every change
 - Undo functionality available for recent changes
-- Registry backups stored in temp folder: `/tmp/ghosty_toolz_registry_backups/`
+- Registry backups stored in temp folder: `/tmp/hayward_tech_suite_registry_backups/`
 - Some tweaks require system restart to take effect
 - Always test on non-production systems first
 
