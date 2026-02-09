@@ -341,9 +341,7 @@ args = [
 
 ### 📦 Using the Pre-built Application
 
-TO BE UPDATED
-
----
+[Get it now](https://github.com/haywardgg/hayward-tech-suite/releases): Download the HaywardTechSuite.zip for the pre-compiled version.
 
 #### Is It Portable?
 
