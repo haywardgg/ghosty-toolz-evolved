@@ -17,6 +17,9 @@ from src.utils.logger import get_logger
 from src.utils.config import get_config
 from src.utils.resource_path import resource_path
 
+# Import migrated tabs
+from src.gui.tabs.monitoring_tab_pyqt6 import MonitoringTab
+
 logger = get_logger("main_window")
 config = get_config()
 
@@ -91,16 +94,28 @@ class MainWindow(QMainWindow):
         self.tab_widget.setMovable(False)
         self.tab_widget.setDocumentMode(False)
         
-        # We'll add tabs as they are migrated
-        # For now, create placeholder tabs to show the structure
+        # Add migrated tabs
+        self._add_migrated_tabs()
+        
+        # Add placeholder tabs for not-yet-migrated tabs
         self._add_placeholder_tabs()
         
-        logger.info("Tab widget created (with placeholders)")
+        logger.info("Tab widget created")
+
+    def _add_migrated_tabs(self) -> None:
+        """Add tabs that have been migrated to PyQt6."""
+        try:
+            # Monitoring tab (MIGRATED)
+            self.monitoring_tab = MonitoringTab(main_window=self)
+            self.tab_widget.addTab(self.monitoring_tab, "Monitoring")
+            logger.info("Monitoring tab created (PyQt6)")
+        except Exception as e:
+            logger.error(f"Failed to create Monitoring tab: {e}", exc_info=True)
 
     def _add_placeholder_tabs(self) -> None:
         """Add placeholder tabs until real tabs are migrated."""
         tab_names = [
-            "Monitoring",
+            # "Monitoring",  # Already migrated
             "Diagnostics", 
             "Maintenance",
             "Security",
