@@ -385,6 +385,10 @@ class MaintenanceTab:
     def _create_restore_point(self) -> None:
         """Create system restore point with auto-generated name."""
         logger.info("User initiated restore point creation")
+        
+        # Disable button and show "Please wait..."
+        if self.create_restore_btn:
+            self.create_restore_btn.configure(state="disabled", text="Please wait...")
 
         def task():
             try:
@@ -393,6 +397,10 @@ class MaintenanceTab:
                         "Admin Required",
                         "Administrator privileges are required to create restore points.\n\n"
                         "Please restart the application as administrator."
+                    ))
+                    # Re-enable button
+                    self.parent.after(0, lambda: self.create_restore_btn.configure(
+                        state="normal", text="Create Restore Point"
                     ))
                     return
 
@@ -409,11 +417,20 @@ class MaintenanceTab:
                     self.parent.after(0, lambda m=message: messagebox.showerror(
                         "Error", f"Failed to create restore point:\n{m}"
                     ))
+                
+                # Re-enable button
+                self.parent.after(0, lambda: self.create_restore_btn.configure(
+                    state="normal", text="Create Restore Point"
+                ))
             except Exception as e:
                 logger.error(f"Restore point creation failed: {e}")
                 error_msg = str(e)
                 self.parent.after(0, lambda ex=error_msg: messagebox.showerror(
                     "Error", f"Failed to create restore point: {ex}"
+                ))
+                # Re-enable button
+                self.parent.after(0, lambda: self.create_restore_btn.configure(
+                    state="normal", text="Create Restore Point"
                 ))
 
         threading.Thread(target=task, daemon=True).start()
@@ -488,7 +505,6 @@ class MaintenanceTab:
         for i, rp in enumerate(restore_points):
             sequence = rp.get('SequenceNumber', 0)
             description = rp.get('Description', 'Unknown')
-            creation_time = self.restore_manager.format_creation_time(rp.get('CreationTime', ''))
             
             # Frame for each restore point
             rp_frame = ctk.CTkFrame(scroll_frame)
@@ -506,24 +522,15 @@ class MaintenanceTab:
                 value=str(sequence),
                 command=select_restore_point
             )
-            radio.grid(row=0, column=0, rowspan=2, padx=5, pady=5)
+            radio.grid(row=0, column=0, padx=5, pady=5)
             
-            # Date/Time label
-            date_label = ctk.CTkLabel(
-                rp_frame,
-                text=creation_time,
-                font=ctk.CTkFont(size=12, weight="bold")
-            )
-            date_label.grid(row=0, column=1, padx=5, pady=(5, 0), sticky="w")
-            
-            # Description label
+            # Description label only (no separate date/time)
             desc_label = ctk.CTkLabel(
                 rp_frame,
                 text=description,
-                font=ctk.CTkFont(size=11),
-                text_color="gray"
+                font=ctk.CTkFont(size=11)
             )
-            desc_label.grid(row=1, column=1, padx=5, pady=(0, 5), sticky="w")
+            desc_label.grid(row=0, column=1, padx=5, pady=5, sticky="w")
             
             # Auto-select the first (most recent) one
             if i == 0:

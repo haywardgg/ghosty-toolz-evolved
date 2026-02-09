@@ -49,15 +49,15 @@ class DebloatTab:
         
         # UI element references
         self.agreement_checkbox: Optional[ctk.CTkCheckBox] = None
-        self.restore_point_checkbox: Optional[ctk.CTkCheckBox] = None
         self.restore_point_info_label: Optional[ctk.CTkLabel] = None
+        self.create_restore_btn: Optional[ctk.CTkButton] = None
+        self.restore_changes_btn: Optional[ctk.CTkButton] = None
         self.terminal_text: Optional[ctk.CTkTextbox] = None
         self.progress_bar: Optional[ctk.CTkProgressBar] = None
         self.progress_label: Optional[ctk.CTkLabel] = None
         self.status_label: Optional[ctk.CTkLabel] = None
         self.scan_button: Optional[ctk.CTkButton] = None
         self.debloat_button: Optional[ctk.CTkButton] = None
-        self.undo_button: Optional[ctk.CTkButton] = None
         
         self.parent.grid_rowconfigure(0, weight=1)
         self.parent.grid_columnconfigure(0, weight=1)
@@ -151,34 +151,64 @@ class DebloatTab:
         """Create restore point section."""
         restore_frame = ctk.CTkFrame(parent)
         restore_frame.grid(row=start_row, column=0, sticky="ew", padx=5, pady=5)
-        restore_frame.grid_columnconfigure(1, weight=1)
+        restore_frame.grid_columnconfigure(0, weight=1)
         
         title = ctk.CTkLabel(
-            restore_frame,
-            text="System Restore Point",
-            font=ctk.CTkFont(size=16, weight="bold")
+            restore_frame, text="System Restore", font=ctk.CTkFont(size=14, weight="bold")
         )
-        title.grid(row=0, column=0, columnspan=3, padx=10, pady=(10, 5), sticky="w")
-        
-        # Enable restore point checkbox
-        self.restore_point_checkbox = ctk.CTkCheckBox(
+        title.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+        info = ctk.CTkLabel(
             restore_frame,
-            text="Create restore point before making changes (Recommended)",
-            font=ctk.CTkFont(size=12)
+            text="Create restore point before making changes (Requires Admin)",
+            font=ctk.CTkFont(size=11),
         )
-        self.restore_point_checkbox.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="w")
-        self.restore_point_checkbox.select()  # Checked by default
-        
-        # Restore point info
+        info.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+
+        # Last restore point info label
         self.restore_point_info_label = ctk.CTkLabel(
             restore_frame,
-            text="Last restore point: Not checked",
+            text="Last restore point: Checking...",
             font=ctk.CTkFont(size=11),
             text_color="gray"
         )
-        self.restore_point_info_label.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+        self.restore_point_info_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
         
-        # Refresh restore points info on load - delay to ensure main loop is running
+        # Check admin status
+        is_admin = AdminState.is_admin()
+
+        # Button frame for side-by-side buttons
+        button_frame = ctk.CTkFrame(restore_frame, fg_color="transparent")
+        button_frame.grid(row=3, column=0, padx=10, pady=10, sticky="w")
+        
+        self.create_restore_btn = ctk.CTkButton(
+            button_frame, 
+            text="Create Restore Point", 
+            command=self._create_restore_point, 
+            width=180,
+            state="normal" if is_admin else "disabled"
+        )
+        self.create_restore_btn.grid(row=0, column=0, padx=(0, 10), sticky="w")
+        
+        self.restore_changes_btn = ctk.CTkButton(
+            button_frame, 
+            text="Restore Changes", 
+            command=self._show_restore_dialog, 
+            width=180,
+            state="normal" if is_admin else "disabled"
+        )
+        self.restore_changes_btn.grid(row=0, column=1, padx=(0, 10), sticky="w")
+        
+        if not is_admin:
+            warning_label = ctk.CTkLabel(
+                restore_frame,
+                text="WARNING: Administrator privileges required for restore operations",
+                font=ctk.CTkFont(size=9),
+                text_color="orange"
+            )
+            warning_label.grid(row=4, column=0, padx=10, pady=5, sticky="w")
+        
+        # Refresh restore point info after UI is ready
         self.parent.after(100, self._refresh_restore_point_info)
         
         return start_row + 1
@@ -436,7 +466,7 @@ class DebloatTab:
         )
         self.progress_label.grid(row=1, column=0, columnspan=4, padx=10, pady=(0, 5), sticky="w")
         
-        # Buttons row - Scan System on left, Start Debloat and Undo Changes on right
+        # Buttons row - Scan System on left, Start Debloat on right
         self.scan_button = ctk.CTkButton(
             button_frame,
             text="Scan System",
@@ -458,17 +488,6 @@ class DebloatTab:
         #    fg_color="red"
         )
         self.debloat_button.grid(row=2, column=2, padx=5, pady=5, sticky="e")
-        
-        self.undo_button = ctk.CTkButton(
-            button_frame,
-            text="Undo Changes",
-            command=self._undo_changes,
-            width=150,
-            height=40,
-            font=ctk.CTkFont(size=13, weight="bold"),
-        #    fg_color="orange"
-        )
-        self.undo_button.grid(row=2, column=3, padx=(5, 10), pady=5, sticky="e")
         
         return start_row + 1
     
@@ -575,14 +594,10 @@ class DebloatTab:
         
         if not self.agreement_accepted:
             # Disable everything except agreement checkbox
-            if self.restore_point_checkbox:
-                self.restore_point_checkbox.configure(state="disabled")
             if self.scan_button:
                 self.scan_button.configure(state="disabled")
             if self.debloat_button:
                 self.debloat_button.configure(state="disabled")
-            if self.undo_button:
-                self.undo_button.configure(state="disabled")
             
             # Disable all category checkboxes
             for category_checkboxes in self.category_checkboxes.values():
@@ -590,8 +605,6 @@ class DebloatTab:
                     checkbox.configure(state="disabled")
         else:
             # Enable based on operation state (agreement accepted)
-            if self.restore_point_checkbox:
-                self.restore_point_checkbox.configure(state="normal")
             
             if not self.is_scanning and not self.is_removing:
                 # Enable scan button when agreement accepted (admin check happens at runtime)
@@ -826,23 +839,6 @@ class DebloatTab:
         if not confirm:
             return
         
-        # Create restore point if requested
-        if self.restore_point_checkbox.get() == 1:
-            self._write_terminal("Creating restore point before removal...", "info")
-            success, message = self.restore_manager.create_restore_point("Before Debloat")
-            if success:
-                self._write_terminal("Restore point created", "success")
-                # Refresh restore point info
-                self.parent.after(100, self._refresh_restore_point_info)
-            else:
-                self._write_terminal(f"Failed to create restore point: {message}", "warning")
-                retry = messagebox.askyesno(
-                    "Continue?",
-                    "Failed to create restore point. Continue anyway?"
-                )
-                if not retry:
-                    return
-        
         self.is_removing = True
         self._update_ui_state()
         self._write_terminal(f"Starting removal of {len(self.selected_items)} items...", "info")
@@ -897,42 +893,215 @@ class DebloatTab:
             completion_callback
         )
     
-    def _undo_changes(self) -> None:
-        """Undo changes using restore point."""
+    def _create_restore_point(self) -> None:
+        """Create system restore point with auto-generated name."""
+        logger.info("User initiated restore point creation")
+        
+        # Disable button and show "Please wait..."
+        if self.create_restore_btn:
+            self.create_restore_btn.configure(state="disabled", text="Please wait...")
+
+        def task():
+            try:
+                if not AdminState.is_admin():
+                    self.parent.after(0, lambda: messagebox.showerror(
+                        "Admin Required",
+                        "Administrator privileges are required to create restore points.\n\n"
+                        "Please restart the application as administrator."
+                    ))
+                    # Re-enable button
+                    self.parent.after(0, lambda: self.create_restore_btn.configure(
+                        state="normal", text="Create Restore Point"
+                    ))
+                    return
+
+                # Create restore point with auto-generated timestamp name
+                success, message = self.restore_manager.create_restore_point()
+                
+                if success:
+                    self.parent.after(0, lambda: messagebox.showinfo(
+                        "Success", "Restore point created successfully!"
+                    ))
+                    # Refresh the restore point info
+                    self.parent.after(100, self._refresh_restore_point_info)
+                else:
+                    self.parent.after(0, lambda m=message: messagebox.showerror(
+                        "Error", f"Failed to create restore point:\n{m}"
+                    ))
+                
+                # Re-enable button
+                self.parent.after(0, lambda: self.create_restore_btn.configure(
+                    state="normal", text="Create Restore Point"
+                ))
+            except Exception as e:
+                logger.error(f"Restore point creation failed: {e}")
+                error_msg = str(e)
+                self.parent.after(0, lambda ex=error_msg: messagebox.showerror(
+                    "Error", f"Failed to create restore point: {ex}"
+                ))
+                # Re-enable button
+                self.parent.after(0, lambda: self.create_restore_btn.configure(
+                    state="normal", text="Create Restore Point"
+                ))
+
+        threading.Thread(target=task, daemon=True).start()
+
+    def _show_restore_dialog(self) -> None:
+        """Show dialog to select and restore from a restore point."""
         if not AdminState.is_admin():
             messagebox.showerror("Error", "Administrator privileges required for system restore")
             return
         
-        # Get available restore points
-        restore_points = self.restore_manager.get_restore_points()
+        logger.info("User initiated restore point selection")
         
-        if not restore_points:
-            messagebox.showwarning("No Restore Points", "No restore points available")
-            return
+        def task():
+            try:
+                # Get available restore points
+                restore_points = self.restore_manager.get_restore_points()
+                
+                if not restore_points:
+                    self.parent.after(0, lambda: messagebox.showwarning(
+                        "No Restore Points", "No restore points available"
+                    ))
+                    return
+                
+                # Show dialog on main thread
+                self.parent.after(0, lambda: self._display_restore_selection_dialog(restore_points))
+                    
+            except Exception as e:
+                logger.error(f"Failed to get restore points: {e}")
+                error_msg = str(e)
+                self.parent.after(0, lambda ex=error_msg: messagebox.showerror(
+                    "Error", f"Failed to get restore points:\n{ex}"
+                ))
         
-        # Show restore point selection dialog (simplified)
-        confirm = messagebox.askyesno(
-            "System Restore",
-            "This will restore your system to a previous state.\n"
-            "All programs installed after the restore point will be removed.\n\n"
-            "The system will restart automatically.\n\n"
-            "Continue?"
+        threading.Thread(target=task, daemon=True).start()
+    
+    def _display_restore_selection_dialog(self, restore_points: list) -> None:
+        """Display restore point selection dialog."""
+        dialog = ctk.CTkToplevel(self.parent)
+        dialog.title("Select Restore Point")
+        dialog.geometry("600x500")
+        dialog.transient(self.parent)
+        dialog.grab_set()
+        
+        # Title
+        title = ctk.CTkLabel(
+            dialog,
+            text="Select a Restore Point",
+            font=ctk.CTkFont(size=16, weight="bold")
         )
+        title.pack(padx=10, pady=10)
         
-        if not confirm:
-            return
+        # Warning
+        warning = ctk.CTkLabel(
+            dialog,
+            text="This will restore your system to a previous state.\nAll programs installed after the restore point will be removed.",
+            font=ctk.CTkFont(size=11),
+            text_color="orange"
+        )
+        warning.pack(padx=10, pady=5)
         
-        # Use the most recent restore point
-        latest = restore_points[0]
-        sequence_number = latest.get('SequenceNumber', 0)
+        # Scrollable frame for restore points
+        scroll_frame = ctk.CTkScrollableFrame(dialog, width=550, height=300)
+        scroll_frame.pack(padx=10, pady=10, fill="both", expand=True)
+        scroll_frame.grid_columnconfigure(0, weight=1)
         
-        self._write_terminal(f"Initiating system restore to sequence {sequence_number}...", "info")
+        # Use list for simpler mutable storage
+        selected_sequence = [None]
+        # Shared radio button variable for proper grouping
+        radio_var = ctk.StringVar(value="")
         
-        success, message = self.restore_manager.restore_system(sequence_number)
+        # Create a radio button for each restore point
+        for i, rp in enumerate(restore_points):
+            sequence = rp.get('SequenceNumber', 0)
+            description = rp.get('Description', 'Unknown')
+            
+            # Frame for each restore point
+            rp_frame = ctk.CTkFrame(scroll_frame)
+            rp_frame.grid(row=i, column=0, sticky="ew", padx=5, pady=5)
+            rp_frame.grid_columnconfigure(1, weight=1)
+            
+            # Radio button - all share the same variable
+            def select_restore_point(seq=sequence):
+                selected_sequence[0] = seq
+            
+            radio = ctk.CTkRadioButton(
+                rp_frame,
+                text="",
+                variable=radio_var,
+                value=str(sequence),
+                command=select_restore_point
+            )
+            radio.grid(row=0, column=0, padx=5, pady=5)
+            
+            # Description label only (no separate date/time)
+            desc_label = ctk.CTkLabel(
+                rp_frame,
+                text=description,
+                font=ctk.CTkFont(size=11)
+            )
+            desc_label.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+            
+            # Auto-select the first (most recent) one
+            if i == 0:
+                radio.select()
+                selected_sequence[0] = sequence
         
-        if success:
-            self._write_terminal("System restore initiated. System will restart.", "success")
-            messagebox.showinfo("System Restore", "System restore initiated.\nThe system will restart shortly.")
-        else:
-            self._write_terminal(f"System restore failed: {message}", "error")
-            messagebox.showerror("Error", f"System restore failed:\n{message}")
+        # Button frame
+        button_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        button_frame.pack(padx=10, pady=10)
+        
+        def perform_restore():
+            if selected_sequence[0] is None:
+                messagebox.showwarning("No Selection", "Please select a restore point")
+                return
+            
+            # Confirm
+            confirm = messagebox.askyesno(
+                "Confirm Restore",
+                "Are you sure you want to restore your system?\n\n"
+                "Your computer will restart automatically.",
+                parent=dialog
+            )
+            
+            if not confirm:
+                return
+            
+            dialog.destroy()
+            
+            # Perform restore
+            def restore_task():
+                success, message = self.restore_manager.restore_system(selected_sequence[0])
+                
+                if success:
+                    self.parent.after(0, lambda: messagebox.showinfo(
+                        "System Restore", 
+                        "System restore initiated.\nThe system will restart shortly."
+                    ))
+                else:
+                    self.parent.after(0, lambda m=message: messagebox.showerror(
+                        "Error", f"System restore failed:\n{m}"
+                    ))
+            
+            threading.Thread(target=restore_task, daemon=True).start()
+        
+        # Restore button
+        restore_btn = ctk.CTkButton(
+            button_frame,
+            text="Restore System",
+            command=perform_restore,
+            width=150,
+            fg_color="#d9534f",
+            hover_color="#c9302c"
+        )
+        restore_btn.grid(row=0, column=0, padx=5)
+        
+        # Cancel button
+        cancel_btn = ctk.CTkButton(
+            button_frame,
+            text="Cancel",
+            command=dialog.destroy,
+            width=150
+        )
+        cancel_btn.grid(row=0, column=1, padx=5)
