@@ -77,7 +77,8 @@ class RestorePointManager:
             # Create the restore point
             Checkpoint-Computer -Description "{description}" -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
             
-            # Wait a moment for the restore point to be fully created
+            # Wait for Windows to register the restore point in the system
+            # 2 seconds is sufficient for most systems; restore point creation is typically instant
             Start-Sleep -Seconds 2
             
             # Verify the restore point was created by checking the count increased
@@ -89,9 +90,9 @@ class RestorePointManager:
                 Write-Output "Failed to create restore point: Restore point was not found after creation"
             }}
         }} catch {{
-            # Check if it's the 24-hour frequency error
+            # Check if it's the 24-hour frequency error or related restore point errors
             $errorMsg = $_.Exception.Message
-            if ($errorMsg -like "*24 hours*" -or $errorMsg -like "*cannot be created*") {{
+            if ($errorMsg -like "*24 hours*" -or $errorMsg -like "*restore point*cannot be created*") {{
                 Write-Output "Failed to create restore point: A restore point was already created within the past 24 hours. The frequency limit setting may not have taken effect yet. Please restart the computer and try again."
             }} else {{
                 Write-Output "Failed to create restore point: $errorMsg"

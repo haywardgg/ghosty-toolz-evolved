@@ -14,7 +14,7 @@ HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore\Sy
 
 When attempting to create a second restore point within 24 hours:
 1. `Checkpoint-Computer` PowerShell cmdlet throws an error
-2. Error message: "A new system restore point cannot be created because a restore point is already created within the past 24 hours"
+2. Error message: "A new system restore point cannot be created because a restore point was already created within the past 24 hours"
 3. The application was not properly detecting this specific error condition
 4. Users would see a success message even though the restore point failed to create
 
