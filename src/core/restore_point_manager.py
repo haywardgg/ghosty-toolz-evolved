@@ -249,4 +249,4 @@ class RestorePointManager:
         creation_time = self.format_creation_time(latest.get('CreationTime', ''))
         description = latest.get('Description', 'Unknown')
         
-        return f"{creation_time} - {description}"
+        return f"{description}"
