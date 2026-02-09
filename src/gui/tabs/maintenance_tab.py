@@ -8,6 +8,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 import threading
 import subprocess
+from typing import Tuple
 
 from src.utils.logger import get_logger
 from src.utils.admin_state import AdminState
@@ -56,7 +57,7 @@ class MaintenanceTab:
 
         logger.info("Maintenance tab initialized")
     
-    def _execute_powershell(self, command: str, timeout: int = 300) -> tuple:
+    def _execute_powershell(self, command: str, timeout: int = 300) -> Tuple[bool, str, str]:
         """
         Execute a PowerShell command properly without double-wrapping.
         
