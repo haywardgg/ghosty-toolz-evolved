@@ -1,7 +1,7 @@
 """
 Main entry point for Hayward Tech Suite.
 
-This module initializes the application and starts the main GUI.
+This module initializes the PyQt6 application and starts the main GUI.
 """
 
 import sys
@@ -13,11 +13,17 @@ if __name__ == "__main__":
     if root_dir not in sys.path:
         sys.path.insert(0, str(root_dir))
 
+from PyQt6.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+
 from src.utils.logger import get_logger, Logger
 from src.utils.config import get_config
 from src.utils.admin_state import AdminState
 from src.core.system_operations import SystemOperations
 from src.gui.main_window import MainWindow
+from src.gui.styles.theme_manager import get_theme_manager
+from src.utils.resource_path import resource_path
 
 logger = get_logger("main")
 
@@ -97,9 +103,12 @@ Starting application...
     logger.info(f"{app_name} v{app_version} starting")
 
 
-def check_admin_privileges() -> bool:
+def check_admin_privileges(app: QApplication) -> bool:
     """
     Check admin privileges and prompt user if not admin.
+    
+    Args:
+        app: QApplication instance for showing dialogs
     
     Returns:
         True if app should continue, False if user wants to exit
@@ -114,31 +123,28 @@ def check_admin_privileges() -> bool:
     # Not admin - show dialog
     logger.warning("Not running as administrator")
     
-    # Import tkinter for messagebox
-    import tkinter as tk
-    from tkinter import messagebox
-    
-    # Create hidden root window for dialog
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes('-topmost', True)
-    
-    # Show dialog
-    result = messagebox.askyesno(
-        "Administrator Privileges Required",
-        "Administrator privileges are required for advanced features:\n\n"
+    # Create message box
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle("Administrator Privileges Required")
+    msg_box.setIcon(QMessageBox.Icon.Warning)
+    msg_box.setText("Administrator privileges are required for advanced features:")
+    msg_box.setInformativeText(
         "• Some tweaks and maintenance operations require admin rights\n"
         "• Registry modifications need elevated permissions\n"
         "• System maintenance tools (SFC, DISM) require admin access\n\n"
-        "Run without admin? (Limited functionality)\n\n"
-        "YES = Continue with limited features\n"
-        "NO = Request admin elevation and restart",
-        icon='warning'
+        "Run without admin? (Limited functionality)"
     )
+    msg_box.setStandardButtons(
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+    )
+    msg_box.setDefaultButton(QMessageBox.StandardButton.No)
     
-    root.destroy()
+    # Make window stay on top
+    msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
     
-    if result:  # User chose YES - continue without admin
+    result = msg_box.exec()
+    
+    if result == QMessageBox.StandardButton.Yes:  # User chose YES - continue without admin
         logger.info("User chose to continue without admin privileges")
         AdminState.set_admin_mode(is_admin=False, declined=True)
         return True
@@ -156,7 +162,7 @@ def check_admin_privileges() -> bool:
 
 def main() -> int:
     """
-    Main entry point for the application.
+    Main entry point for the PyQt6 application.
 
     Returns:
         Exit code (0 for success)
@@ -173,24 +179,58 @@ def main() -> int:
             logger.error("Requirements check failed")
             return 1
 
-        # Check admin privileges
-        if not check_admin_privileges():
-            logger.info("Application startup cancelled by user")
-            return 0
-
+        # Create QApplication
+        app = QApplication(sys.argv)
+        app.setApplicationName("Hayward Tech Suite")
+        app.setOrganizationName("Hayward")
+        
         # Load configuration
         config = get_config()
         logger.info("Configuration loaded")
+        
+        # Set application metadata
+        app_version = config.get("app.version", "1.0.0")
+        app.setApplicationVersion(app_version)
+        
+        # Enable High DPI scaling
+        QApplication.setHighDpiScaleFactorRoundingPolicy(
+            Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+        )
+        
+        # Set application icon if available
+        icon_path = Path(resource_path("images/icon.ico"))
+        if icon_path.exists():
+            try:
+                app.setWindowIcon(QIcon(str(icon_path)))
+                logger.info(f"Application icon set: {icon_path}")
+            except Exception as e:
+                logger.warning(f"Could not set application icon: {e}")
+        
+        # Load and apply theme
+        theme_manager = get_theme_manager()
+        theme_name = config.get("ui.theme", "hacker_dark")
+        if theme_manager.apply_theme(theme_name, app):
+            logger.info(f"Applied theme: {theme_name}")
+        else:
+            logger.warning(f"Failed to apply theme: {theme_name}, using default")
 
-        # Create and run main window
+        # Check admin privileges
+        if not check_admin_privileges(app):
+            logger.info("Application startup cancelled by user")
+            return 0
+
+        # Create and show main window
         logger.info("Creating main window...")
-        app = MainWindow()
+        main_window = MainWindow()
+        main_window.show()
 
         logger.info("Application started successfully")
-        app.mainloop()
-
-        logger.info("Application closed normally")
-        return 0
+        
+        # Start event loop
+        exit_code = app.exec()
+        
+        logger.info(f"Application closed normally with exit code: {exit_code}")
+        return exit_code
 
     except KeyboardInterrupt:
         logger.info("Application interrupted by user")
