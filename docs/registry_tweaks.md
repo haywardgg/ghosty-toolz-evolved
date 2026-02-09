@@ -579,4 +579,4 @@ The developers of Hayward Tech Suite are not responsible for any damage or data 
 ---
 
 *Last Updated: 2024*
-*Total Tweaks Available: 42*
+*Total Tweaks Available: 40*
