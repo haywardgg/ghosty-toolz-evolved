@@ -1,6 +1,7 @@
-# Core GUI Framework
-customtkinter>=5.2.1
-Pillow>=10.3.0
+# Core GUI Framework - PyQt6
+PyQt6>=6.6.0
+PyQt6-Qt6>=6.6.0
+PyQt6-sip>=13.6.0
 
 # System Monitoring
 psutil>=5.9.8
