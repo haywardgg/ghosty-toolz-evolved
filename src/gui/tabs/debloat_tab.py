@@ -1018,15 +1018,13 @@ class DebloatTab:
             rp_frame.grid_columnconfigure(1, weight=1)
             
             # Radio button - all share the same variable
-            def select_restore_point(seq=sequence):
-                selected_sequence[0] = seq
-            
+            # Use lambda with default argument to properly capture the sequence value
             radio = ctk.CTkRadioButton(
                 rp_frame,
                 text="",
                 variable=radio_var,
                 value=str(sequence),
-                command=select_restore_point
+                command=lambda seq=sequence: selected_sequence.__setitem__(0, seq)
             )
             radio.grid(row=0, column=0, padx=5, pady=5)
             
