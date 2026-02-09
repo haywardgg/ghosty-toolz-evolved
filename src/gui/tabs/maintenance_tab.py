@@ -304,8 +304,9 @@ class MaintenanceTab:
                     ))
             except Exception as e:
                 logger.error(f"DNS flush failed: {e}")
-                self.parent.after(0, lambda: messagebox.showerror(
-                    "Error", f"Failed to flush DNS: {e}"
+                error_msg = str(e)
+                self.parent.after(0, lambda ex=error_msg: messagebox.showerror(
+                    "Error", f"Failed to flush DNS: {ex}"
                 ))
 
         threading.Thread(target=task, daemon=True).start()
@@ -363,8 +364,9 @@ class MaintenanceTab:
                     ))
             except Exception as e:
                 logger.error(f"Restore point creation failed: {e}")
-                self.parent.after(0, lambda: messagebox.showerror(
-                    "Error", f"Failed to create restore point: {e}"
+                error_msg = str(e)
+                self.parent.after(0, lambda ex=error_msg: messagebox.showerror(
+                    "Error", f"Failed to create restore point: {ex}"
                 ))
 
         threading.Thread(target=task, daemon=True).start()
@@ -393,8 +395,9 @@ class MaintenanceTab:
                     
             except Exception as e:
                 logger.error(f"Failed to get restore points: {e}")
-                self.parent.after(0, lambda: messagebox.showerror(
-                    "Error", f"Failed to get restore points:\n{e}"
+                error_msg = str(e)
+                self.parent.after(0, lambda ex=error_msg: messagebox.showerror(
+                    "Error", f"Failed to get restore points:\n{ex}"
                 ))
         
         threading.Thread(target=task, daemon=True).start()
@@ -632,7 +635,8 @@ class MaintenanceTab:
                             f"[{timestamp}] DNS cache flushed successfully.\n\n"
                         ))
                     except Exception as e:
-                        output_dialog.after(0, lambda: append_output(f"[ERROR] {str(e)}\n\n"))
+                        error_msg = str(e)
+                        output_dialog.after(0, lambda ex=error_msg: append_output(f"[ERROR] {ex}\n\n"))
 
                 # System File Checker
                 if not self.maintenance_cancelled.is_set():
@@ -673,7 +677,8 @@ class MaintenanceTab:
                                 f"\n[{timestamp}] System File Checker completed with errors (code {process.returncode}).\n\n"
                             ))
                     except Exception as e:
-                        output_dialog.after(0, lambda: append_output(f"[ERROR] {str(e)}\n\n"))
+                        error_msg = str(e)
+                        output_dialog.after(0, lambda ex=error_msg: append_output(f"[ERROR] {ex}\n\n"))
 
                 # DISM Health Check
                 if not self.maintenance_cancelled.is_set():
@@ -714,7 +719,8 @@ class MaintenanceTab:
                                 f"\n[{timestamp}] DISM completed with errors (code {process.returncode}).\n\n"
                             ))
                     except Exception as e:
-                        output_dialog.after(0, lambda: append_output(f"[ERROR] {str(e)}\n\n"))
+                        error_msg = str(e)
+                        output_dialog.after(0, lambda ex=error_msg: append_output(f"[ERROR] {ex}\n\n"))
 
                 # Complete
                 if not self.maintenance_cancelled.is_set():
@@ -764,8 +770,9 @@ class MaintenanceTab:
 
             except Exception as e:
                 logger.error(f"Disk health check failed: {e}")
-                self.parent.after(0, lambda: messagebox.showerror(
-                    "Error", f"Failed to check disk health: {e}"
+                error_msg = str(e)
+                self.parent.after(0, lambda ex=error_msg: messagebox.showerror(
+                    "Error", f"Failed to check disk health: {ex}"
                 ))
 
         threading.Thread(target=task, daemon=True).start()
