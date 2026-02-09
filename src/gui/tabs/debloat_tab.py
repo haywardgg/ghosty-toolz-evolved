@@ -613,9 +613,6 @@ class DebloatTab:
                 # Enable debloat button when agreement accepted and items selected
                 if self.debloat_button:
                     self.debloat_button.configure(state="normal")
-                # Enable undo button when agreement accepted
-                if self.undo_button:
-                    self.undo_button.configure(state="normal")
                 
                 # Enable checkboxes
                 for category_checkboxes in self.category_checkboxes.values():
@@ -627,8 +624,6 @@ class DebloatTab:
                     self.scan_button.configure(state="disabled")
                 if self.debloat_button:
                     self.debloat_button.configure(state="disabled")
-                if self.undo_button:
-                    self.undo_button.configure(state="disabled")
                 
                 for category_checkboxes in self.category_checkboxes.values():
                     for checkbox in category_checkboxes.values():
