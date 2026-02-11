@@ -393,7 +393,7 @@ class SettingsTab:
                         os_name = "Windows 11"
                         os_release = "11"
                     
-                    info_lines.append(f"OS: {os_name} {os_release}")
+                    info_lines.append(f"OS: {os_name}")
                     info_lines.append(f"Version: {os_version}")
                     info_lines.append(f"Architecture: {os_machine}")
                     
