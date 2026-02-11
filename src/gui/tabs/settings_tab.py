@@ -390,7 +390,7 @@ class SettingsTab:
                         # Replace "Windows 10" with "Windows 11" in the product name
                         if "Windows 10" in product_name:
                             product_name = product_name.replace("Windows 10", "Windows 11")
-                        os_name = "Windows 11"
+                        os_name = "Microsoft Windows"
                         os_release = "11"
                     
                     info_lines.append(f"OS: {os_name}")
@@ -412,7 +412,7 @@ class SettingsTab:
                     info_lines.append(f"Build: {build_number}")
                     winreg.CloseKey(key)
                 except Exception:
-                    info_lines.append(f"OS: {os_name} {os_release}")
+                    info_lines.append(f"OS: {os_name}")
                     info_lines.append(f"Version: {os_version}")
                     info_lines.append(f"Architecture: {os_machine}")
                     info_lines.append(f"Edition: Unable to detect")
